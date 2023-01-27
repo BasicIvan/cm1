@@ -2,7 +2,7 @@
 
         ! solve1: pre-RK terms
         ! (tendencies held fixed during Runge-Kutta integration and acoustic sub-stepping)
-
+	! github dummy test ! Ivan Basic 27.01.23.
 !-----------------------------------------------------------------------------
 !
 !  CM1 Numerical Model, Release 21.0  (cm1r21.0)
