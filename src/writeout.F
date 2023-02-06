@@ -19,7 +19,9 @@
 
              subroutine writeout(srec,urec,vrec,wrec,mrec,rtime,dt,fnum,nwrite,qname,qunit,    &
                         nstep,mtime,adt,ndt,domainlocx,domainlocy,                             &
-                        name_output,desc_output,unit_output,grid_output,cmpr_output,           &
+                        name_output,desc_output,unit_output,								   &
+                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 24.01.23.
+                        grid_output,cmpr_output,           									   &
                         xh,xf,uf,yh,yf,vf,xfref,yfref,                                         &
                         rds,sigma,rdsf,sigmaf,zh,zf,mf,gx,gy,wprof,                            &
                         pi0,prs0,rho0,rr0,rf0,rrf0,th0,qv0,u0,v0,thv0,rth0,qc0,qi0,            &
@@ -47,7 +49,7 @@
                         edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc,                       &
                         vdfg,maxmf,nupdraft,ktop_plume,                                        &
                         dat1,dat2,dat3,reqt,dum2d          ,dumk1,dumk2,                       &
-                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,out2d,out3d,cir,crr,cangle,        &
+                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 24.01.23.
                         bndy,kbdy,hflxw,hflxe,hflxs,hflxn,recy_cap,recy_inj,timavg,sfctimavg,kmwk, &
                         nw1,nw2,ne1,ne2,sw1,sw2,se1,se2,myi1p,myi2p,myj1p,myj2p)
                         ! end_writeout
@@ -187,6 +189,13 @@
 
       real, intent(inout), dimension(kmt) :: nw1,nw2,ne1,ne2,sw1,sw2,se1,se2
       integer, intent(in), dimension(numprocs) :: myi1p,myi2p,myj1p,myj2p
+      
+      ! Ivan Basic 24.01.23. These are declared as (in) variables only.
+      character(len=60), intent(in), dimension(maxvars) :: desc_tmea
+      character(len=40), intent(in), dimension(maxvars) :: name_tmea,unit_tmea
+      real, intent(in), dimension(ib:ie,jb:je,kb:ke,ntmea) :: tmea
+      integer :: ntmea_write
+      logical :: write_tmea
 
       integer :: i,j,k,n,nn,im,ip,nloop,nmax
       integer :: ncid,time_index,varid
@@ -348,6 +357,15 @@
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
     ! 2d s-staggered variables:
+
+    ! Ivan Basic, 23.01.23:
+    write_tmea = .false.
+    do ntmea_write = 1, ntmea2d
+        if ( trim(name_output(n)).eq.trim(name_tmea(ntmea_write)) ) then
+        	write_tmea = .true.
+            exit
+        endif
+    enddo
 
   !.............................................
 
@@ -3143,6 +3161,28 @@
       enddo
 
     ENDIF  out2dcheck
+    
+    ! Ivan Basic 24.01.23.
+    if( dotmea )then
+      do n = 1, ntmea2d
+        n_out = n_out + 1
+        name_output(n_out) = name_tmea(n)
+        desc_output(n_out) = desc_tmea(n)
+        unit_output(n_out) = unit_tmea(n)
+        grid_output(n_out) = '2'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
+      enddo
+      
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j)
+          do j=1,nj
+          do i=1,ni
+            dum2d(i,j) = tmea(i,j,1,ntmea_write)
+          enddo
+          enddo
+
+        call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
+      
+    endif
 
   !.............................................
 
@@ -3153,6 +3193,14 @@
     ! 3d s-staggered variables:
 
   !.............................................
+  	! Ivan Basic 06.02.23.
+  	write_tmea = .false.
+        do ntmea_write = 1+ntmea2d, ntmea+ntmea2d
+          if ( trim(name_output(n)).eq.trim(name_tmea(ntmea_write)) ) then
+            write_tmea = .true.
+            exit
+          endif
+        enddo
 
     if(output_zh     .eq.1)then
       n_out = n_out + 1
@@ -6604,7 +6652,28 @@
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)
       ENDIF
 
+    ! Ivan Basic 24.01.23.
+    if( dotmea )then   
+      do n = 1+ntmea2d, ntmea+ntmea2d
+        n_out = n_out + 1
+        name_output(n_out) = name_tmea(n)
+        desc_output(n_out) = desc_tmea(n)
+        unit_output(n_out) = unit_tmea(n)
+        grid_output(n_out) = 's'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
+      enddo
+      
 
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=1,maxk
+          do j=1,nj
+          do i=1,ni
+            dum1(i,j,k) = tmea(i,j,k,ntmea_write)
+          enddo
+          enddo
+          enddo
+        call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)      
+    endif
   !.............................................
 
 

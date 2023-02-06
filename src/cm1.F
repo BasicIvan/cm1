@@ -35,6 +35,7 @@
       use turb_module
       use statpack_module
       use writeout_module
+      use tmea_module ! Ivan Basic 19.01.23.
       use restart_write_module, only : restart_write
       use restart_read_module, only : restart_read
       use radiation_module, only : radiation_driver
@@ -211,6 +212,15 @@
       ! miscellaneous output:
       real, dimension(:,:,:),   allocatable :: out2d
       real, dimension(:,:,:,:), allocatable :: out3d
+      
+      ! Ivan Basic 19.01.23.
+      integer :: ncalctm
+      double precision :: tmeatim
+      character(len=60), dimension(maxvars) :: desc_tmea
+      character(len=40), dimension(maxvars) :: name_tmea,unit_tmea
+      real, dimension(:,:,:), allocatable :: ulast,vlast,wlast,thlast
+      real, dimension(:,:,:,:), allocatable :: tmea,tke_sg,qlast
+      logical :: dotmcalc
 
       ! for output using cylindrical coords:
       integer, dimension(:,:), allocatable :: cir
@@ -294,6 +304,7 @@
       nstatout=1
       nwrite = 1
       nwritet = 1
+      ncalctm = 1 ! Ivan Basic 19.01.23.
       nwritea = 1
       nwriteh = 1
       outfile=6
@@ -368,6 +379,7 @@
       dostat = .false.
       doprclout = .false.
       dotdwrite = .false.
+      dotmcalc = .false. ! Ivan Basic 19.01.23.
       doazimwrite = .false.
       dohifrqwrite = .false.
       dotbud = .true.
@@ -2484,6 +2496,22 @@
           call MPI_BARRIER (MPI_COMM_WORLD,ierr)
 #endif
 
+      ! Ivan Basic 19.01.23.
+      call setup_tmea(name_tmea,desc_tmea,unit_tmea)
+      allocate( tmea(ib:ie,jb:je,kb:ke,ntmea+ntmea2d) )
+      tmea = 0.0
+      allocate( tke_sg(ib:ie,jb:je,kb:ke+1,5) )
+      tke_sg = 0.0
+      allocate( ulast(ib:ie+1,jb:je,kb:ke) )
+      ulast = 0.0
+      allocate( vlast(ib:ie,jb:je+1,kb:ke) )
+      vlast = 0.0
+      allocate( wlast(ib:ie,jb:je,kb:ke+1) )
+      wlast = 0.0
+      allocate( thlast(ib:ie,jb:je,kb:ke) )
+      thlast = 0.0
+      allocate( qlast(ibm:iem,jbm:jem,kbm:kem,numq) )
+      qlast = 0.0
 !----------------------------------------------------------------------
 
       nwritea = 1
@@ -2574,6 +2602,12 @@
 
 !----------------------------------------------------------------------
 !  Prepare for I/O:
+
+      call       setup_output(qname,qunit,budname,   &
+                              name_output,desc_output,unit_output,  &
+                              name_tmea,  desc_tmea,  unit_tmea,  &
+                              grid_output,cmpr_output,  &
+                              xh,xf,yh,yf,xfref,yfref,sigma,sigmaf,dosfcflx) ! Ivan Basic 20.01.23.
 
       cmpr_output = .true.
 
@@ -2707,7 +2741,21 @@
       ELSE
         diagtim = 1.0d60
       ENDIF
-
+      
+      ! Ivan Basic 20.01.23.
+      IF( dotmea )THEN
+        IF( restarted .and. tmeafrq.gt.1.0e-6 )THEN
+          tmeatim = mtime + tmeafrq
+          if(dowr) write(outfile,*)
+          if(dowr) write(outfile,*) '   tmeatim = ',tmeatim
+          if(dowr) write(outfile,*)
+        ELSE
+          tmeatim = 0.0
+        ENDIF
+      ELSE
+        tmeatim = 1.0d60
+      ENDIF
+      
       IF( doazimavg )THEN
         IF( restarted .and. azimavgfrq.gt.1.0e-6 )THEN
           azimavgtim = mtime + azimavgfrq
@@ -2990,6 +3038,7 @@
           call   getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
+                          tmeatim,dotmcalc,												& ! Ivan Basic 20.01.23.
                           hifrqtim,dohifrqwrite,.true.)
 
         endif
@@ -3041,7 +3090,8 @@
         dostat      = .true.
         dowriteout  = .true.
         doprclout   = .true.
-        dotdwrite   = .false.           !Ivan Basic 18.11.2022. WIth .true., there is an error with terrain.
+        dotdwrite   = .false.           ! Ivan Basic 18.11.22. WIth .true., there is an error with terrain.
+        dotmcalc    = .true. 			! Ivan Basic 20.01.23.
         doazimwrite = .true.
         dohifrqwrite = .true.
       ELSE
@@ -3052,6 +3102,7 @@
         dowriteout  = .false.
         doprclout   = .false.
         dotdwrite   = .false.
+        dotmcalc    = .false.
         doazimwrite = .false.
         dohifrqwrite = .false.
         if( .not. restart_prcl ) doprclout = .true.
@@ -3072,6 +3123,7 @@
         dosolve = .false.
         if( doazimavg .and. nwritea.eq.1 ) doazimwrite = .true.
         if( dodomaindiag .and. nwritet.eq.1 ) dotdwrite = .true.
+        if( dotmea .and. ncalctm.eq.1 ) dotmcalc = .true. ! Ivan Basic 20.01.23.
         if( dohifrq .and. nwriteh.eq.1 ) dohifrqwrite = .true.
       ENDIF
 
@@ -3191,6 +3243,13 @@
             dotdwrite = .true.
           endif
         ENDIF
+        
+        ! Ivan Basic 20.01.23.
+        IF( dotmea )THEN
+          if( (mtime+dbldt).ge.(tmeatim-0.1*dt) .or. tmeafrq.le.0.0 )then
+            dotmcalc = .true.
+          endif
+        ENDIF
 
         IF( doazimavg )THEN
           if( (mtime+dbldt).ge.(azimavgtim-0.1d0*dbldt) .or. azimavgfrq.le.0.0 )then
@@ -3210,24 +3269,24 @@
         dovbud = .false.
         dowbud = .false.
 
-        IF( dowriteout .or. dotdwrite .or. doazimwrite )THEN
-          if( output_thbudget.eq.1 .or. dodomaindiag )THEN
+        IF( dowriteout .or. dotdwrite .or. doazimwrite .or dotmcalc )THEN ! Ivan Basic 23.01.23.
+          if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dotbud = .true.
             if(myid.eq.0) print *,'  dotbud = ',dotbud
           endif
-          if( output_qvbudget.eq.1 .or. dodomaindiag )THEN
+          if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             doqbud = .true.
             if(myid.eq.0) print *,'  doqbud = ',doqbud
           endif
-          if( output_ubudget.eq.1 .or. dodomaindiag )THEN
+          if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             doubud = .true.
             if(myid.eq.0) print *,'  doubud = ',doubud
           endif
-          if( output_vbudget.eq.1 .or. dodomaindiag )THEN
+          if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dovbud = .true.
             if(myid.eq.0) print *,'  dovbud = ',dovbud
           endif
-          if( output_wbudget.eq.1 .or. dodomaindiag )THEN
+          if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dowbud = .true.
             if(myid.eq.0) print *,'  dowbud = ',dowbud
           endif
@@ -3287,7 +3346,7 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   doazimwrite,dorestart)
+                   doazimwrite,dorestart) ! Ivan Basic 20.01.23.
         ! end_solve1
 
 

@@ -1886,7 +1886,7 @@
       do k=1,nk
       do j=1,nj
       do i=1,ni
-      !Ivan Basic: this is the line where the tracer conc. is updated. dttmp * tendency (time step) * (sten). sten=ptten
+      ! Ivan Basic: this is the line where the tracer conc. is updated. dttmp * tendency (time step) * (sten). sten=ptten
         pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*sten(i,j,k)
         !pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*( sten(i,j,k) - pta(i,j,k,n)/pttau ) !Ivan Basic: this line is from  Jan Weinkaemmerer, 06.08.21
       enddo

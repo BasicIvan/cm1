@@ -2,7 +2,7 @@
 
         ! solve1: pre-RK terms
         ! (tendencies held fixed during Runge-Kutta integration and acoustic sub-stepping)
-	! github dummy test ! Ivan Basic 27.01.23.
+
 !-----------------------------------------------------------------------------
 !
 !  CM1 Numerical Model, Release 21.0  (cm1r21.0)
@@ -111,7 +111,8 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   doazimwrite,dorestart)
+                   dotmcalc,doazimwrite,dorestart,					 &
+                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 23.01.23.
         ! end_solve1
       use input
       use constants
@@ -205,8 +206,14 @@
 
       real, intent(in), dimension(ibta:ieta,jbta:jeta,kbta:keta,ntavr) :: timavg
 
-      logical, intent(in) :: dowriteout,dorad,dotdwrite,doazimwrite,dorestart
+      logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart ! Ivan Basic 23.01.23.
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud,donudge
+      ! Ivan Basic 23.01.23.
+      real, intent(inout), dimension(ib:ie+1,jb:je,kb:ke) :: ulast 
+      real, intent(inout), dimension(ib:ie,jb:je+1,kb:ke) :: vlast
+      real, intent(inout), dimension(ib:ie,jb:je,kb:ke+1) :: wlast
+      real, intent(inout), dimension(ib:ie,jb:je,kb:ke) :: thlast
+      real, intent(inout), dimension(ibm:iem,jbm:jem,kbm:kem,numq) :: qlast
 
 !-----------------------------------------------------------------------
 ! Arrays and variables defined inside solve
@@ -245,7 +252,38 @@
 
       afoo=0.0d0
       bfoo=0.0d0
+      
+      dotbud = .false.
+      doqbud = .false.
+      doubud = .false.
+      dovbud = .false.
+      dowbud = .false.
 
+	  !Ivan Basic 06.02.23
+      ! Do the budgets for online time averaging, too. Budgets have to be prepared in param.F.
+      IF( dowriteout .or. dotdwrite .or. dotmcalc )THEN ! Ivan Basic 06.02.23
+        if( output_thbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+          dotbud = .true.
+          if(myid.eq.0) print *,'  dotbud = ',dotbud
+        endif
+        if( output_qvbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+          doqbud = .true.
+          if(myid.eq.0) print *,'  doqbud = ',doqbud
+        endif
+        if( output_ubudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+          doubud = .true.
+          if(myid.eq.0) print *,'  doubud = ',doubud
+        endif
+        if( output_vbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+          dovbud = .true.
+          if(myid.eq.0) print *,'  dovbud = ',dovbud
+        endif
+        if( output_wbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+          dowbud = .true.
+          if(myid.eq.0) print *,'  dowbud = ',dowbud
+        endif
+      ENDIF
+      
       if( testcase.eq.10 )then
         tqnudge = .true.
       else
@@ -327,7 +365,8 @@
         ENDDO
         if(timestats.ge.1) time_turb=time_turb+mytime()
 
-        if( dotdwrite .and. kd_turb.ge.1 )then
+        !if( dotdwrite .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1
@@ -349,7 +388,8 @@
                    dum1,dum2,dum3,dum4,dum5,sten,tkea,tketen,kmh,kmv)
       endif
 
-        if( dotdwrite .and. kd_turb.ge.1 )then
+        !if( dotdwrite .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1

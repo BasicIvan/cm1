@@ -36,7 +36,7 @@
               restart_file_qv0,restart_file_u0,restart_file_v0,               &
               restart_file_zs,restart_file_zh,restart_file_zf,                &
               restart_file_diags,restart_use_theta,restart_reset_frqtim,      &
-              dolsw,dodomaindiag,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    &
+              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & ! Ivan Basic 23.01.23.
               use_pbl,use_avg_sfc,dot2p,iusetke,do_adapt_move,                &
               bl_mynn_tkeadvect,idoles,idopbl,dotimeavg,interp_on_restart,    &
               do_recycle_w,do_recycle_s,do_recycle_e,do_recycle_n,            &
@@ -66,7 +66,7 @@
               ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,                           &
               ibdv,iedv,jbdv,jedv,kbdv,kedv,nudiag,nvdiag,nwdiag,             &
               ibdk,iedk,jbdk,jedk,kbdk,kedk,nkdiag,                           &
-              ibdp,iedp,jbdp,jedp,kbdp,kedp,npdiag,                           &
+              ibdp,iedp,jbdp,jedp,kbdp,kedp,npdiag,ntmea,ntmea2d,             & ! Ivan Basic 23.01.23.
               ib2d,ie2d,jb2d,je2d,nout2d,                                     &
               ib3d,ie3d,jb3d,je3d,kb3d,ke3d,nout3d,                           &
               ibph,ieph,jbph,jeph,kbph,keph,                                  &
@@ -208,7 +208,7 @@
 !-----------------------------------------------------------------------
 
       double precision ::                                                     &
-           tapfrq,rstfrq,statfrq,prclfrq,diagfrq,azimavgfrq,hifrqfrq
+           tapfrq,rstfrq,statfrq,prclfrq,diagfrq,tmeafrq,azimavgfrq,hifrqfrq ! Ivan Basic 23.01.23.
 
 !-----------------------------------------------------------------------
 
@@ -322,7 +322,7 @@
               prcl_km,prcl_kh,prcl_tke,prcl_dbz,prcl_b,prcl_vpg,prcl_vort,    &
               prcl_rho,prcl_qsat,prcl_sfc
       namelist /param14/                                                      &
-              dodomaindiag,diagfrq
+              dodomaindiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
       namelist /param15/                                                      &
               doazimavg,azimavgfrq,rlen,do_adapt_move,adapt_move_frq
       namelist /param17/                                                      &

@@ -593,6 +593,7 @@
       subroutine getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
+                          tmeatim,dotmcalc,												& ! Ivan Basic 23.01.23.
                           hifrqtim,dohifrqwrite,doinit)
       use input
       use goddard_module, only : consat2
@@ -610,6 +611,10 @@
       double precision, intent(in) :: hifrqtim
       logical, intent(in) :: dohifrqwrite
       logical, intent(in) :: doinit
+      
+      ! Ivan basic 23.01.23.
+      double precision, intent(in) :: tmeatim
+      logical, intent(in) :: dotmcalc
 
       real :: tem,ks_limit
       double precision :: tout
@@ -728,6 +733,23 @@
                 dbldt = tout/2.0d0
               elseif( tout.le.dbldt )then
                 if(myid.eq.0) print *,'  Note: setting dt based on upcoming diag time '
+                dbldt = tout
+              endif
+            ENDIF
+
+            ! Ivan Basic 23.01.23.
+            IF( dotmea .and. tmeatim.gt.0.0 )THEN
+              ! ramp-down timestep when approaching tmea time
+              if( dotmcalc )then
+                tout = ( ( tmeatim - mtime ) + tmeafrq )
+              else
+                tout = ( tmeatim - mtime )
+              endif
+              if( tout.gt.(2.0*dbldt) .and. tout.le.(3.0*dbldt)  )then
+                dbldt = tout/3.0
+              elseif( tout.gt.dbldt .and. tout.le.(2.0*dbldt)  )then
+                dbldt = tout/2.0
+              elseif( tout.le.dbldt )then
                 dbldt = tout
               endif
             ENDIF

@@ -601,6 +601,10 @@
       call MPI_BCAST(dodomaindiag,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(diagfrq   ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
+      ! Ivan Basic 20.01.23.
+      call MPI_BCAST(dotmea    ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(tmeafrq   ,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
+
       call MPI_BCAST(doazimavg     ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(azimavgfrq    ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(rlen          ,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
@@ -5278,7 +5282,7 @@
       td_melt  = 0
       td_frz   = 0
 
-      IF( output_thbudget.eq.1 .or.dodomaindiag )THEN
+      IF( output_thbudget.eq.1 .or.dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ibdt = ib
         iedt = ie
         jbdt = jb
@@ -5464,7 +5468,7 @@
 
         endif
       ENDIF
-      IF( ( output_qvbudget.eq.1 .or. dodomaindiag ) .and. imoist.eq.1 )THEN
+      IF( ( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea ) .and. imoist.eq.1 )THEN ! Ivan Basic 20.01.23.
         ibdq = ib
         iedq = ie
         jbdq = jb
@@ -5566,7 +5570,7 @@
       ud_lsw     = 0
       nutk       = 0
 
-      IF( output_ubudget.eq.1 .or. dodomaindiag )THEN
+      IF( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5671,7 +5675,7 @@
       vd_lsw     = 0
       nvtk       = 0
 
-      IF( output_vbudget.eq.1 .or. dodomaindiag )THEN
+      IF( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5773,7 +5777,7 @@
       wd_buoy    = 0
       nwtk       = 0
 
-      IF( output_wbudget.eq.1 .or. dodomaindiag )THEN
+      IF( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
