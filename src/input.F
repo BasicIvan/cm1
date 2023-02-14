@@ -36,12 +36,12 @@
               restart_file_qv0,restart_file_u0,restart_file_v0,               &
               restart_file_zs,restart_file_zh,restart_file_zf,                &
               restart_file_diags,restart_use_theta,restart_reset_frqtim,      &
-              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & ! Ivan Basic 23.01.23.
+              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & 
               use_pbl,use_avg_sfc,dot2p,iusetke,do_adapt_move,                &
               bl_mynn_tkeadvect,idoles,idopbl,dotimeavg,interp_on_restart,    &
               do_recycle_w,do_recycle_s,do_recycle_e,do_recycle_n,            &
               do_lsnudge,do_lsnudge_u,do_lsnudge_v,do_lsnudge_th,do_lsnudge_qv, &
-              do_ib
+              do_ib ! Ivan Basic 23.01.23.
 
 !-----------------------------------------------------------------------
 
@@ -66,7 +66,7 @@
               ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,                           &
               ibdv,iedv,jbdv,jedv,kbdv,kedv,nudiag,nvdiag,nwdiag,             &
               ibdk,iedk,jbdk,jedk,kbdk,kedk,nkdiag,                           &
-              ibdp,iedp,jbdp,jedp,kbdp,kedp,npdiag,ntmea,ntmea2d,             & ! Ivan Basic 23.01.23.
+              ibdp,iedp,jbdp,jedp,kbdp,kedp,npdiag,ntmea,ntmea2d,             & 
               ib2d,ie2d,jb2d,je2d,nout2d,                                     &
               ib3d,ie3d,jb3d,je3d,kb3d,ke3d,nout3d,                           &
               ibph,ieph,jbph,jeph,kbph,keph,                                  &
@@ -163,8 +163,8 @@
               bl_mynn_cloudmix,bl_mynn_mixqt,initflag,spp_pbl,bl_mynn_output, &
               nutk,nvtk,nwtk,                                                 &
               ntim,ntavr,utav,vtav,wtav,ttav,qtav,etav,uutav,vvtav,           &
-              nsfctavr,les_subdomain_shape,ib_init
-
+              nsfctavr,les_subdomain_shape,ib_init ! Ivan Basic 23.01.23.
+              
 !-----------------------------------------------------------------------
 
       real dx,dy,dz,dtl,timax,run_time,                                       &

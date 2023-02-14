@@ -603,7 +603,7 @@
 
       ! Ivan Basic 20.01.23.
       call MPI_BCAST(dotmea    ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
-      call MPI_BCAST(tmeafrq   ,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(tmeafrq   ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
       call MPI_BCAST(doazimavg     ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(azimavgfrq    ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
