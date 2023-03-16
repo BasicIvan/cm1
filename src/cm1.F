@@ -3269,7 +3269,7 @@
         dovbud = .false.
         dowbud = .false.
 
-        IF( dowriteout .or. dotdwrite .or. doazimwrite .or dotmcalc )THEN ! Ivan Basic 23.01.23.
+        IF( dowriteout .or. dotdwrite .or. doazimwrite .or. dotmcalc )THEN ! Ivan Basic 23.01.23.
           if( output_thbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dotbud = .true.
             if(myid.eq.0) print *,'  dotbud = ',dotbud
