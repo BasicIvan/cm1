@@ -733,15 +733,15 @@
       call wenocheck
 
       if( axisymm.eq.1 )then
-        dodomaindiag = .false.
+        doturbdiag = .false.
         doazimavg = .false.
         testcase = 0
       endif
 
       IF( do_lsnudge )THEN
         ! for diagnostic purposes:
-        if( .not. dodomaindiag )then
-          dodomaindiag = .true.
+        if( .not. doturbdiag )then
+          doturbdiag = .true.
           diagfrq = tapfrq
         endif
       ENDIF
@@ -5282,7 +5282,7 @@
       td_melt  = 0
       td_frz   = 0
 
-      IF( output_thbudget.eq.1 .or.dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      IF( output_thbudget.eq.1 .or.doturbdiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ibdt = ib
         iedt = ie
         jbdt = jb
@@ -5438,8 +5438,8 @@
       getvt = .false.
       IF( efall.eq.1 ) getvt = .true.
       IF( output_fallvel.eq.1 ) getvt = .true.
-      IF( imoist.eq.1 .and. dodomaindiag .and. ( ptype.eq.3 .or. ptype.eq.5 ) ) getvt = .true.
-      IF( imoist.eq.1 .and. dodomaindiag .and. testcase.eq.5 ) getvt = .true.
+      IF( imoist.eq.1 .and. doturbdiag .and. ( ptype.eq.3 .or. ptype.eq.5 ) ) getvt = .true.
+      IF( imoist.eq.1 .and. doturbdiag .and. testcase.eq.5 ) getvt = .true.
 
       IF( getvt )THEN
         if( imoist.eq.1 .and. ( ptype.eq.3 .or. ptype.eq.5 ) )then
@@ -5468,7 +5468,7 @@
 
         endif
       ENDIF
-      IF( ( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea ) .and. imoist.eq.1 )THEN ! Ivan Basic 20.01.23.
+      IF( ( output_qvbudget.eq.1 .or. doturbdiag .or. dotmea ) .and. imoist.eq.1 )THEN ! Ivan Basic 20.01.23.
         ibdq = ib
         iedq = ie
         jbdq = jb
@@ -5570,7 +5570,7 @@
       ud_lsw     = 0
       nutk       = 0
 
-      IF( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      IF( output_ubudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5650,7 +5650,7 @@
           ud_lsw = nudiag
         endif
 
-        if( dodomaindiag )then
+        if( doturbdiag )then
           nudiag = nudiag + 1
           nutk = nudiag
         endif
@@ -5675,7 +5675,7 @@
       vd_lsw     = 0
       nvtk       = 0
 
-      IF( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      IF( output_vbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5755,7 +5755,7 @@
           vd_lsw = nvdiag
         endif
 
-        if( dodomaindiag )then
+        if( doturbdiag )then
           nvdiag = nvdiag + 1
           nvtk = nvdiag
         endif
@@ -5777,7 +5777,7 @@
       wd_buoy    = 0
       nwtk       = 0
 
-      IF( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      IF( output_wbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5835,7 +5835,7 @@
         nwdiag = nwdiag+1
         wd_buoy = nwdiag
 
-        if( dodomaindiag )then
+        if( doturbdiag )then
           nwdiag = nwdiag + 1
           nwtk = nwdiag
         endif
@@ -5856,7 +5856,7 @@
       kd_adv   = 0
       kd_turb  = 0
 
-      IF( idopbl .and. dodomaindiag .and. iusetke )THEN
+      IF( idopbl .and. doturbdiag .and. iusetke )THEN
 
         ibdk = ib
         iedk = ie
@@ -6285,9 +6285,9 @@
 
 !------------------------------------------------------------------
 
-    IF( dodomaindiag )THEN
+    IF( doturbdiag )THEN
       if(dowr) write(outfile,*)
-      if(dowr) write(outfile,*) 'dodomaindiag = ',dodomaindiag
+      if(dowr) write(outfile,*) 'doturbdiag = ',doturbdiag
       if(dowr) write(outfile,*) 'diagfrq      = ',diagfrq
       if(dowr) write(outfile,*)
     ENDIF
