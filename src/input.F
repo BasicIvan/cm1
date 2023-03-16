@@ -36,7 +36,7 @@
               restart_file_qv0,restart_file_u0,restart_file_v0,               &
               restart_file_zs,restart_file_zh,restart_file_zf,                &
               restart_file_diags,restart_use_theta,restart_reset_frqtim,      &
-              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & 
+              dolsw,doturbdiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & 
               use_pbl,use_avg_sfc,dot2p,iusetke,do_adapt_move,                &
               bl_mynn_tkeadvect,idoles,idopbl,dotimeavg,interp_on_restart,    &
               do_recycle_w,do_recycle_s,do_recycle_e,do_recycle_n,            &
@@ -322,7 +322,7 @@
               prcl_km,prcl_kh,prcl_tke,prcl_dbz,prcl_b,prcl_vpg,prcl_vort,    &
               prcl_rho,prcl_qsat,prcl_sfc
       namelist /param14/                                                      &
-              dodomaindiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
+              doturbdiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
       namelist /param15/                                                      &
               doazimavg,azimavgfrq,rlen,do_adapt_move,adapt_move_frq
       namelist /param17/                                                      &

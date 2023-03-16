@@ -2433,7 +2433,7 @@
       if(dowr) write(outfile,*) '   nwrite  = ',nwrite
       if(dowr) write(outfile,*) '   nrst    = ',nrst
       if(dowr) write(outfile,*) '   nstatout= ',nstatout
-      if( dodomaindiag )then
+      if( doturbdiag )then
       if(dowr) write(outfile,*) '   trecs   = ',trecs
       if(dowr) write(outfile,*) '   trecw   = ',trecw
       if(dowr) write(outfile,*) '   nwritet = ',nwritet

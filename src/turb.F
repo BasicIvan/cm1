@@ -1845,7 +1845,7 @@
           enddo
         endif
 
-        IF( output_km.eq.1 .or. output_kh.eq.1 .or. dodomaindiag )THEN
+        IF( output_km.eq.1 .or. output_kh.eq.1 .or. doturbdiag )THEN
 !$omp parallel do default(shared)   &
 !$omp private(i,j,k)
           do k=1,nk+1

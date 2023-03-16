@@ -718,7 +718,7 @@
               endif
             ENDIF
 
-            IF( dodomaindiag .and. diagtim.gt.0.0 )THEN
+            IF( doturbdiag .and. diagtim.gt.0.0 )THEN
               ! ramp-down timestep when approaching domaindiag time
               if( dotdwrite )then
                 tout = ( ( diagtim - mtime ) + diagfrq )
