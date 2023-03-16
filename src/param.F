@@ -598,7 +598,7 @@
       call MPI_BCAST(ramp_time ,1,MPI_REAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(t2p_avg   ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
 
-      call MPI_BCAST(dodomaindiag,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(doturbdiag,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(diagfrq   ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
       ! Ivan Basic 20.01.23.
