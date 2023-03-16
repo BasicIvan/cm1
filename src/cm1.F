@@ -2729,7 +2729,7 @@
       ENDIF
 
 
-      IF( dodomaindiag )THEN
+      IF( doturbdiag )THEN
         IF( restarted .and. diagfrq.gt.1.0e-6 )THEN
           diagtim = mtime + diagfrq
           if(dowr) write(outfile,*)
@@ -3122,15 +3122,15 @@
         dostat = .true.
         dosolve = .false.
         if( doazimavg .and. nwritea.eq.1 ) doazimwrite = .true.
-        if( dodomaindiag .and. nwritet.eq.1 ) dotdwrite = .true.
+        if( doturbdiag .and. nwritet.eq.1 ) dotdwrite = .true.
         if( dotmea .and. ncalctm.eq.1 ) dotmcalc = .true. ! Ivan Basic 20.01.23.
         if( dohifrq .and. nwriteh.eq.1 ) dohifrqwrite = .true.
       ENDIF
 
       getvt = .false.
       IF( dowriteout .and. output_fallvel.eq.1 ) getvt = .true.
-      IF( imoist.eq.1 .and. dodomaindiag .and. (ptype.eq.3.or.ptype.eq.5) ) getvt = .true.
-      IF( imoist.eq.1 .and. dodomaindiag .and. testcase.eq.5 ) getvt = .true.
+      IF( imoist.eq.1 .and. doturbdiag .and. (ptype.eq.3.or.ptype.eq.5) ) getvt = .true.
+      IF( imoist.eq.1 .and. doturbdiag .and. testcase.eq.5 ) getvt = .true.
 
 
       if( interp_on_restart )then
@@ -3194,7 +3194,7 @@
 
 
         getvt = .false.
-        IF( dodomaindiag )THEN
+        IF( doturbdiag )THEN
         IF( imoist.eq.1 .and. (ptype.eq.3.or.ptype.eq.5.or.testcase.eq.5) )THEN
           if( (mtime+dbldt).ge.(diagtim-0.1d0*dbldt) ) getvt = .true.
           if( getvt .and. myid.eq.0 ) print *,'  getvt = ',getvt
@@ -3207,7 +3207,7 @@
           if( ((mtime+dbldt).ge.(taptim-0.1d0*dbldt)) .or. tapfrq.le.0.0 )then
             getdbz = .true.
           endif
-          if( dodomaindiag )then
+          if( doturbdiag )then
             if( (mtime+dbldt).ge.(diagtim-0.1d0*dbldt) .or. diagfrq.le.0.0 )then
               getdbz = .true.
             endif
@@ -3238,7 +3238,7 @@
         endif
 
 
-        IF( dodomaindiag )THEN
+        IF( doturbdiag )THEN
           if( (mtime+dbldt).ge.(diagtim-0.1d0*dbldt) .or. diagfrq.le.0.0 )then
             dotdwrite = .true.
           endif
@@ -3270,23 +3270,23 @@
         dowbud = .false.
 
         IF( dowriteout .or. dotdwrite .or. doazimwrite .or dotmcalc )THEN ! Ivan Basic 23.01.23.
-          if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_thbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dotbud = .true.
             if(myid.eq.0) print *,'  dotbud = ',dotbud
           endif
-          if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_qvbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             doqbud = .true.
             if(myid.eq.0) print *,'  doqbud = ',doqbud
           endif
-          if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_ubudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             doubud = .true.
             if(myid.eq.0) print *,'  doubud = ',doubud
           endif
-          if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_vbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dovbud = .true.
             if(myid.eq.0) print *,'  dovbud = ',dovbud
           endif
-          if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_wbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
             dowbud = .true.
             if(myid.eq.0) print *,'  dowbud = ',dowbud
           endif
@@ -4048,7 +4048,7 @@
 !      endif
 
 
-    IF( dodomaindiag )THEN
+    IF( doturbdiag )THEN
       if( dotdwrite )then
 
         call   domaindiag(nstep,mtime,nwritet,trecs,trecw,qname,qunit,dt,dosfcflx, &
@@ -4643,7 +4643,7 @@
       write(outfile,100) 'pdef    ',time_pdef,time_pdef/time_solve
       write(outfile,100) 'prsrho  ',time_prsrho,time_prsrho/time_solve
       write(outfile,100) 'parcels ',time_parcels,time_parcels/time_solve
-      if( dodomaindiag )  &
+      if( doturbdiag )  &
       write(outfile,100) 'domndiag',time_diag,time_diag/time_solve
       if( doazimavg )  &
       write(outfile,100) 'azimavg ',time_azimavg,time_azimavg/time_solve
