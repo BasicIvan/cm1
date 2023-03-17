@@ -295,9 +295,9 @@ soundns.o: constants.o input.o misclibs.o bc.o comm.o ib_module.o
 statpack.o: constants.o input.o maxmin.o misclibs.o cm1libs.o writeout_nc.o
 testcase_simple_phys.o: constants.o input.o
 thompson.o: input.o module_mp_radar.o module_ra_etc.o
+tmea.o: input.o constants.o getcape.o turbdiag.o
 turb.o: constants.o input.o bc.o comm.o sfcphys.o sfclay.o sfclayrev.o slab.o oml.o ysu.o cm1libs.o module_sf_gfdl.o module_bl_gfsedmf.o module_sf_mynn.o module_bl_mynn.o module_bl_myjpbl.o module_sf_myjsfc.o turbnba.o misclibs.o ib_module.o turbtend.o
 turbtend.o: constants.o input.o cm1libs.o misclibs.o
 turbnba.o: constants.o input.o bc.o comm.o
 writeout.o: constants.o input.o bc.o comm.o writeout_nc.o misclibs.o getcape.o ib_module.o cm1libs.o sfcphys.o eddy_recycle.o
-tmea.o: input.o
 writeout_nc.o: constants.o input.o
