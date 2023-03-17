@@ -18,7 +18,7 @@
       implicit none
 
       private
-      public :: tmea, setup_tmea, calc_tmea, calc_tke_sg
+      public :: setup_tmea, calc_tmea, calc_tke_sg
 
       CONTAINS
 

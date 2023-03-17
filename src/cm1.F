@@ -35,7 +35,7 @@
       use turb_module
       use statpack_module
       use writeout_module
-      use tmea_module ! Ivan Basic 19.01.23.
+      use tmea_module, only: setup_tmea, calc_tmea, calc_tke_sg ! Ivan Basic 19.01.23.
       use restart_write_module, only : restart_write
       use restart_read_module, only : restart_read
       use radiation_module, only : radiation_driver
