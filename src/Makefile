@@ -178,6 +178,7 @@ SRC   = constants.F \
 	turbnba.F \
 	domaindiag.F \
 	writeout.F \
+	tmea.F \
 	restart_write.F \
 	restart_read.F \
 	writeout_nc.F \
