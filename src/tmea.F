@@ -25,7 +25,10 @@
       subroutine setup_tmea(name_tmea,desc_tmea,unit_tmea)
 
         use input
-
+        
+#ifdef MPI
+      use mpi
+#endif
         implicit none
 
         character(len=40), dimension(maxvars), intent(inout) :: name_tmea, unit_tmea
@@ -684,7 +687,10 @@
         use input
         use getcape_module
         use turbdiag_module, only: getavg3d, getmax
-
+        
+#ifdef MPI
+      use mpi
+#endif
         implicit none
 
         integer, intent(in) :: ncalctm
@@ -2667,7 +2673,10 @@
 
         use input
         use constants
-
+        
+#ifdef MPI
+      use mpi
+#endif
         implicit none
 
         real, intent(in), dimension(ib:ie,jb:je) :: znt,ust,thflux,qvflux

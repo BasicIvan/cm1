@@ -3810,6 +3810,7 @@
           call   getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
+                          tmeatim,dotmcalc,												& ! Ivan Basic 20.01.23.
                           hifrqtim,dohifrqwrite,.false.)
 
         ENDIF
