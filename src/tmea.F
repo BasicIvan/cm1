@@ -686,7 +686,7 @@
 
         use input
         use getcape_module
-        use turbdiag_module, only: getavg3d, getmax
+        use domaindiag_module, only: getavg3d, getmax
         
 #ifdef MPI
       use mpi
@@ -1154,7 +1154,7 @@
               if( tkea(i,j,k).ge.1.0e-6 )then
                 sgs(i,j,k) = 2.0*lenscl(i,j,k)*khv(i,j,k)     &
                                 *( (tmp1*rdz*mf(i,j,k))**2 )  &
-                                /(2.02*sqrt(max(1.0e-6,tkea(i,j,k)))) ! from turbdiag.F
+                                /(2.02*sqrt(max(1.0e-6,tkea(i,j,k)))) ! from domaindiag.F
               endif
             enddo
             enddo
