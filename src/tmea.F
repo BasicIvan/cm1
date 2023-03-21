@@ -686,7 +686,7 @@
 
         use input
         use getcape_module
-        use domaindiag_module, only: getavg3d, getmax
+        use domaindiag_module !, only: getavg3d, getmax
         
 #ifdef MPI
       use mpi
