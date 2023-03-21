@@ -3340,7 +3340,8 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   doazimwrite,dorestart) ! Ivan Basic 20.01.23.
+                   doazimwrite,dorestart							 &
+                   ulast,vlast,wlast,thlast,qlast)) ! Ivan Basic 20.01.23.
         ! end_solve1
 
 
@@ -3932,7 +3933,9 @@
           ENDIF
           call          writeout(frec,urec,vrec,wrec,mrec,rtime,dt,fnum,nwrite,qname,qunit,    &
                         nstep,mtime,adt,ndt,domainlocx,domainlocy,                             &
-                        name_output,desc_output,unit_output,grid_output,cmpr_output,           &
+                        name_output,desc_output,unit_output,								   &
+                        name_tmea,desc_tmea,unit_tmea,										   &
+                        grid_output,cmpr_output,           									   &
                         xh,xf,uf,yh,yf,vf,xfref,yfref,                                         &
                         rds,sigma,rdsf,sigmaf,zh,zf,mf,gx,gy,wprof,                            &
                         pi0,prs0,rho0,rr0,rf0,rrf0,th0,qv0,u0,v0,thv0,rth0,qc0,qi0,            &
