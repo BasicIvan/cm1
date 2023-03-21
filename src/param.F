@@ -5422,6 +5422,15 @@
       qd_evar  = 0
       qd_dep   = 0
       qd_subl  = 0
+      
+      qcd_hadv  = 0
+      qcd_vadv  = 0
+      qcd_hturb = 0
+      qcd_vturb = 0
+      qcd_hidiff = 0
+      qcd_vidiff = 0
+      qcd_mp    = 0
+      qcd_pbl   = 0
 
       ! dbz (new for cm1r19)
       IF( output_dbz.eq.1 .or. restart_file_dbz .or. (imoist.eq.1.and.ptype.eq.3) )THEN
@@ -5481,26 +5490,48 @@
 
         nqdiag = nqdiag + 1
         qd_vadv = nqdiag
+		!
+        nqdiag = nqdiag + 1
+        qcd_hadv = nqdiag
 
+        nqdiag = nqdiag + 1
+        qcd_vadv = nqdiag
+        ! Ivan Basic 21.03.23.
         if( cm1setup.ge.1 .or. ipbl.ge.1 )then
           if(dohturb)then
             nqdiag = nqdiag + 1
             qd_hturb = nqdiag
+            !
+            nqdiag = nqdiag + 1
+          	qcd_hturb = nqdiag
+          	! Ivan Basic 21.03.23.
           endif
           if(dovturb)then
             nqdiag = nqdiag + 1
             qd_vturb = nqdiag
+            !
+            nqdiag = nqdiag + 1
+          	qcd_vturb = nqdiag
+          	! Ivan Basic 21.03.23.
           endif
         endif
 
         if( hadvordrs.eq.3 .or. hadvordrs.eq.5 .or. hadvordrs.eq.7 .or. hadvordrs.eq.9 .or. advwenos.ge.1 )then
           nqdiag = nqdiag + 1
           qd_hidiff = nqdiag
+          !
+          nqdiag = nqdiag + 1
+          qcd_hidiff = nqdiag
+          ! Ivan Basic 21.03.23.
         endif
 
         if( vadvordrs.eq.3 .or. vadvordrs.eq.5 .or. vadvordrs.eq.7 .or. vadvordrs.eq.9 .or. advwenos.ge.1 )then
           nqdiag = nqdiag + 1
           qd_vidiff = nqdiag
+          !
+          nqdiag = nqdiag + 1
+          qcd_vidiff = nqdiag
+          ! Ivan Basic 23.03.23.
         endif
 
         if( idiff.eq.1 )then
@@ -5516,6 +5547,10 @@
         if( ptype.ge.1 )then
           nqdiag = nqdiag + 1
           qd_mp = nqdiag
+          !
+          nqdiag = nqdiag + 1
+          qcd_mp = nqdiag
+          ! Ivan Basic 21.03.23.
         endif
 
         if( testcase.eq.10 .or. do_lsnudge )then
@@ -5526,6 +5561,10 @@
         if( use_pbl )then
           nqdiag = nqdiag + 1
           qd_pbl = nqdiag
+          !
+          nqdiag = nqdiag + 1
+          qcd_pbl = nqdiag
+          ! Ivan Basic 21.03.23.
         endif
 
         if( dolsw )then

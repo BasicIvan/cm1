@@ -40,7 +40,7 @@
       use restart_read_module, only : restart_read
       use radiation_module, only : radiation_driver
       use radtrns3d_module, only : nrad2d,n2d_radiat,n3d_radiat
-      use domaindiag_module, only : domaindiag
+      use domaindiag_module !, only : domaindiag ! Ivan Basic 21.03.23.
       use azimavg_module
       use hifrq_module, only : writeout_hifrq
       use parcel_module
@@ -2602,12 +2602,6 @@
 
 !----------------------------------------------------------------------
 !  Prepare for I/O:
-
-      call       setup_output(qname,qunit,budname,   &
-                              name_output,desc_output,unit_output,  &
-                              name_tmea,  desc_tmea,  unit_tmea,  &
-                              grid_output,cmpr_output,  &
-                              xh,xf,yh,yf,xfref,yfref,sigma,sigmaf,dosfcflx) ! Ivan Basic 20.01.23.
 
       cmpr_output = .true.
 

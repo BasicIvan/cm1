@@ -163,7 +163,9 @@
               bl_mynn_cloudmix,bl_mynn_mixqt,initflag,spp_pbl,bl_mynn_output, &
               nutk,nvtk,nwtk,                                                 &
               ntim,ntavr,utav,vtav,wtav,ttav,qtav,etav,uutav,vvtav,           &
-              nsfctavr,les_subdomain_shape,ib_init ! Ivan Basic 23.01.23.
+              nsfctavr,les_subdomain_shape,ib_init,							  &
+              qcd_hadv,qcd_vadv,qcd_hturb,qcd_vturb,qcd_hidiff,qcd_vidiff,    &
+              qcd_mp,qcd_pbl ! Ivan Basic 23.01.23.
               
 !-----------------------------------------------------------------------
 
