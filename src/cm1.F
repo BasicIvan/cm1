@@ -3340,7 +3340,7 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   doazimwrite,dorestart							 &
+                   dotmcalc,doazimwrite,dorestart,					 &
                    ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 20.01.23.
         ! end_solve1
 
@@ -3934,7 +3934,7 @@
           call          writeout(frec,urec,vrec,wrec,mrec,rtime,dt,fnum,nwrite,qname,qunit,    &
                         nstep,mtime,adt,ndt,domainlocx,domainlocy,                             &
                         name_output,desc_output,unit_output,								   &
-                        name_tmea,desc_tmea,unit_tmea,										   &
+                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 24.01.23.
                         grid_output,cmpr_output,           									   &
                         xh,xf,uf,yh,yf,vf,xfref,yfref,                                         &
                         rds,sigma,rdsf,sigmaf,zh,zf,mf,gx,gy,wprof,                            &
@@ -3963,7 +3963,7 @@
                         edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc,                       &
                         vdfg,maxmf,nupdraft,ktop_plume,                                        &
                         dat1,dat2,dat3,reqt,thten1(ib,jb,1),dumk1,dumk2,                       &
-                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,out2d,out3d,cir,crr,cangle,        &
+                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 24.01.23.
                         bndy,kbdy,hflxw,hflxe,hflxs,hflxn,recy_cap,recy_inj,timavg,sfctimavg,kmwk, &
                         nw1,nw2,ne1,ne2,sw1,sw2,se1,se2,myi1p,myi2p,myj1p,myj2p)
                         ! end_writeout
