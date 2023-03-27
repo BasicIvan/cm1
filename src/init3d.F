@@ -338,7 +338,7 @@
         endif
         if(n.eq.3)then
           pta(i,j,k,n)=0.0
-          #if(zh(i,j,k).gt.6000.0.and.zh(i,j,k).lt.9000.0) pta(i,j,k,n)=0.0001
+          !if(zh(i,j,k).gt.6000.0.and.zh(i,j,k).lt.9000.0) pta(i,j,k,n)=0.0001
         endif
       enddo
       enddo

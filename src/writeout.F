@@ -3057,28 +3057,6 @@
 !    endif
 
   !.............................................
-
-	! Ivan Basic 24.01.23.
-    if( dotmea )then
-      do n = 1, ntmea2d
-        n_out = n_out + 1
-        name_output(n_out) = name_tmea(n)
-        desc_output(n_out) = desc_tmea(n)
-        unit_output(n_out) = unit_tmea(n)
-        grid_output(n_out) = '2'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
-      enddo
-      
-          !$omp parallel do default(shared)  &
-          !$omp private(i,j)
-          do j=1,nj
-          do i=1,ni
-            dum2d(i,j) = tmea(i,j,1,ntmea_write)
-          enddo
-          enddo
-
-        call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
-      
-    endif
     
     IF( do_ib )THEN
 
@@ -3144,6 +3122,27 @@
 
     ENDIF
 
+	! Ivan Basic 24.01.23.
+    if( dotmea )then
+      do n = 1, ntmea2d
+        n_out = n_out + 1
+        name_output(n_out) = name_tmea(n)
+        desc_output(n_out) = desc_tmea(n)
+        unit_output(n_out) = unit_tmea(n)
+        grid_output(n_out) = '2'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
+      enddo
+      
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j)
+          do j=1,nj
+          do i=1,ni
+            dum2d(i,j) = tmea(i,j,1,ntmea_write)
+          enddo
+          enddo
+
+        call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
+      
+    endif
   !.............................................
 
     out2dcheck:  &

@@ -3895,10 +3895,49 @@
 110       format(2x,i12,4x,f18.6,a5)
         endif
 
+	  !Ivan Basic 27.03.23.
+      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
+      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
+      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
+      IF( dotmea )THEN
+        if( dotmcalc )then
 
-      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
-      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
-      !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
+          call calc_tke_sg(tke_sg,ust,znt,kmv,defv,defh,thflux,rth0s, &
+                            qvflux,khv,nm,dissten,kdiag)
+
+          !call calc_tmea(ncalctm,mtime,mtimelast,dbldt,name_tmea,rf, &
+          !               mf,tmea,tke_sg,hpbl,th0,tha,thlast,prs,rho, &
+          !               qa,ua,va,wa,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
+          !               sigma,sigmaf,rds,rdsf,gz,gzu,gzv,gxu,gyv,rgz,uf,vf, &
+          !               udiag,vdiag,wdiag)
+          if( startup )then
+            call calc_tmea(ncalctm,mtime,dbldt,name_tmea,rf, &
+                            mf,tmea,tke_sg,hpbl,th0,tha,prs,rho, &
+                            qa,ua,va,wa,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
+                            sigma,sigmaf,rds,rdsf,gz,gzu,gzv,gxu,gyv,rgz,uf,vf, &
+                            udiag,vdiag,wdiag,tdiag,qdiag,pi0,ppi,pta,rmh,zh) ! test 16.02.20
+          else
+            call calc_tmea(ncalctm,mtime,dbldt,name_tmea,rf, &
+                            mf,tmea,tke_sg,hpbl,th0,thlast,prs,rho, &
+                            qlast,ulast,vlast,wlast,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
+                            sigma,sigmaf,rds,rdsf,gz,gzu,gzv,gxu,gyv,rgz,uf,vf, &
+                            udiag,vdiag,wdiag,tdiag,qdiag,pi0,ppi,pta,rmh,zh) ! test 16.02.20
+          endif
+          ! end tmea
+          ncalctm = ncalctm+1
+          if(tmeafrq.gt.0.0)then
+            doit = .true.
+            do while( doit )
+              tmeatim = tmeatim+tmeafrq
+              if( tmeatim.gt.mtime )then
+                doit = .false.
+              endif
+            enddo
+          endif
+          !if(timestats.ge.1) time_turbdiag = time_turbdiag+mytime()
+
+        endif
+      ENDIF
 
 !      if( restarted )then
 !        nwrite = nwrite-1
@@ -3987,6 +4026,10 @@
             endif
           enddo
         endif
+        ! Ivan Basic 27.03.23.
+        ncalctm = 1
+        tmea = 0.0
+        !
         if(myid.eq.0) print *,'  next taptim = ',taptim
         if(timestats.ge.1) time_write=time_write+mytime()
       endif
@@ -4366,6 +4409,7 @@
         dowriteout  = .false.
         doprclout   = .false.
         dotdwrite   = .false.
+        dotmcalc    = .false. ! Ivan Basic 27.03.23.
         doazimwrite = .false.
         dohifrqwrite = .false.
 
