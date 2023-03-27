@@ -361,7 +361,7 @@
     ! Ivan Basic, 23.01.23:
     write_tmea = .false.
     do ntmea_write = 1, ntmea2d
-        if ( trim(name_output(n)).eq.trim(name_tmea(ntmea_write)) ) then
+        if ( trim(name_output(n_out)).eq.trim(name_tmea(ntmea_write)) ) then
         	write_tmea = .true.
             exit
         endif
