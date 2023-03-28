@@ -844,7 +844,7 @@
         enddo
         print *,'  done with dqvdz'
         
-		print *,'if trim(name) loop begins...'
+		print *,'THE BIG LOOP BEGINS'
         DO n = 1, ntmea+ntmea2d
 		  print *,'  n = ',n
           if (trim(name_tmea(n)).eq.'hpbl_TM') then
@@ -1155,7 +1155,7 @@
             do j=1,nj
             do i=1,ni
               tmp1 = (th0(i,j,k)+tha(i,j,k)) - (th0(i,j,k-1)+tha(i,j,k-1))
-              if( tkea(i,j,k).ge.1.0e-6 )then
+              if ( tkea(i,j,k).ge.1.0e-6 ) then
                 sgs(i,j,k) = 2.0*lenscl(i,j,k)*khv(i,j,k)     &
                                 *( (tmp1*rdz*mf(i,j,k))**2 )  &
                                 /(2.02*sqrt(max(1.0e-6,tkea(i,j,k)))) ! from domaindiag.F
@@ -2268,8 +2268,10 @@
                   z_t = zh(i,j,k)
                 endif
               enddo
-              if ( qa(i,j,maxk,nqc).gt.0.0001 ) z_t = zh(i,j,maxk)
+              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then
+              z_t = zh(i,j,maxk)
               zmin = z_b + (z_t-z_b)/4.0
+              endif
 
               do k=1,nk
                 if ( zh(i,j,k).ge.zmin ) then
