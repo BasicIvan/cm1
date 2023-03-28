@@ -118,7 +118,8 @@
                    bndy,kbdy,hflxw,hflxe,hflxs,hflxn,                &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
-                   doazimwrite,dorestart)
+                   doazimwrite,dorestart,							 &
+                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 23.01.23.)
         ! end_solve2
       use input
       use constants

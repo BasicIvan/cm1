@@ -111,8 +111,7 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   dotmcalc,doazimwrite,dorestart,					 &
-                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 23.01.23.
+                   dotmcalc,doazimwrite,dorestart) ! Ivan Basic 23.01.23.
         ! end_solve1
       use input
       use constants
