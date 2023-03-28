@@ -118,7 +118,7 @@
                    bndy,kbdy,hflxw,hflxe,hflxs,hflxn,                &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
-                   doazimwrite,dorestart,							 &
+                   dotmcalc,doazimwrite,dorestart,					 &
                    ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 23.01.23.)
         ! end_solve2
       use input
@@ -241,7 +241,7 @@
       integer, intent(in), dimension(ibib:ieib,jbib:jeib) :: kbdy
       integer, intent(in), dimension(ibib:ieib,jbib:jeib,kmaxib) :: hflxw,hflxe,hflxs,hflxn
 
-      logical, intent(in) :: dowriteout,dorad,dotdwrite,doazimwrite,dorestart
+      logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud
       
       ! Ivan Basic 23.01.23.
