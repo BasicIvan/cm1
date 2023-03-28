@@ -208,13 +208,6 @@
 
       logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart ! Ivan Basic 23.01.23.
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud,donudge
-      ! Ivan Basic 23.01.23.
-      real, intent(inout), dimension(ib:ie+1,jb:je,kb:ke) :: ulast 
-      real, intent(inout), dimension(ib:ie,jb:je+1,kb:ke) :: vlast
-      real, intent(inout), dimension(ib:ie,jb:je,kb:ke+1) :: wlast
-      real, intent(inout), dimension(ib:ie,jb:je,kb:ke) :: thlast
-      real, intent(inout), dimension(ibm:iem,jbm:jem,kbm:kem,numq) :: qlast
-
 !-----------------------------------------------------------------------
 ! Arrays and variables defined inside solve
 

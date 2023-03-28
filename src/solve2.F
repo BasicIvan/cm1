@@ -242,6 +242,13 @@
 
       logical, intent(in) :: dowriteout,dorad,dotdwrite,doazimwrite,dorestart
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud
+      
+      ! Ivan Basic 23.01.23.
+      real, intent(inout), dimension(ib:ie+1,jb:je,kb:ke) :: ulast 
+      real, intent(inout), dimension(ib:ie,jb:je+1,kb:ke) :: vlast
+      real, intent(inout), dimension(ib:ie,jb:je,kb:ke+1) :: wlast
+      real, intent(inout), dimension(ib:ie,jb:je,kb:ke) :: thlast
+      real, intent(inout), dimension(ibm:iem,jbm:jem,kbm:kem,numq) :: qlast
 
 !-----------------------------------------------------------------------
 ! Arrays and variables defined inside solve
@@ -444,7 +451,7 @@
 
         !$omp parallel do default(shared)  &
         !$omp private(i,j,k)
-        do k=1,nk
+        do k=1,nk !+1? Ivan Basic 28.03.23.
         do j=1,nj+1
         do i=1,ni+1
           uten(i,j,k)=uten1(i,j,k)
@@ -452,6 +459,26 @@
           wten(i,j,k)=wten1(i,j,k)
         enddo
         enddo
+         if( doubud .and. (dotdwrite .or. dotmcalc) .and. nrk.eq.nrkmax )then
+            ! Ivan Basic 28.03.23. save u for rtke calculation:
+            do j=jb,je
+            do i=ib,ie+1
+              ulast(i,j,k) = u3d(i,j,k)
+            enddo
+            enddo
+            
+            do j=jb,je+1
+            do i=ib,ie
+              vlast(i,j,k) = v3d(i,j,k)
+            enddo
+            enddo
+            
+            do j=jb,je
+            do i=ib,ie
+              wlast(i,j,k) = w3d(i,j,k)
+            enddo
+            enddo
+         endif
         enddo
         if(timestats.ge.1) time_misc=time_misc+mytime()
 
@@ -1293,6 +1320,16 @@
 !--------------------------------------------------------------------
 !  THETA-equation
 
+      ! Ivan Basic 28.03.23.
+      if( dotbud .and. dotmcalc .and. nrk.eq.nrkmax )then
+        do k=1,nk
+        do j=jb,je
+        do i=ib,ie
+          thlast(i,j,k) = th3d(i,j,k)
+        enddo
+        enddo
+        enddo
+      endif
 #ifdef MPI
         IF(nrk.ge.2)THEN
           call comm_3s_end(th3d,rw31,rw32,re31,re32,   &
@@ -1391,6 +1428,16 @@
 
     DO n=1,numq
 
+      ! Ivan Basic 28.03.23.
+      if( doqbud .and. dotmcalc .and. nrk.eq.nrkmax )then
+        do k=1,nk
+        do j=jb,je
+        do i=ib,ie
+          qlast(i,j,k,n) = q3d(i,j,k,n)
+        enddo
+        enddo
+        enddo
+      endif
       ! t33 = dummy
 
       bflag=0

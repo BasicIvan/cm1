@@ -3340,8 +3340,8 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   dotmcalc,doazimwrite,dorestart,					 &
-                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 20.01.23.
+                   dotmcalc,doazimwrite,dorestart)
+                   
         ! end_solve1
 
 
@@ -3391,7 +3391,8 @@
                    bndy,kbdy,hflxw,hflxe,hflxs,hflxn,                &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
-                   doazimwrite,dorestart)
+                   doazimwrite,dorestart,							 &
+                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 20.01.23.)
         ! end_solve2
 
 
@@ -3895,7 +3896,7 @@
 110       format(2x,i12,4x,f18.6,a5)
         endif
 
-	  !Ivan Basic 27.03.23.
+      !Ivan Basic 27.03.23.
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
