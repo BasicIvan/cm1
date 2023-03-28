@@ -2268,9 +2268,9 @@
                   z_t = zh(i,j,k)
                 endif
               enddo
-              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then
-              z_t = zh(i,j,maxk)
-              zmin = z_b + (z_t-z_b)/4.0
+              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then !Ivan Basic 28.03.23.
+                z_t = zh(i,j,maxk)
+                zmin = z_b + (z_t-z_b)/4.0
               endif
 
               do k=1,nk
