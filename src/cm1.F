@@ -3391,7 +3391,7 @@
                    bndy,kbdy,hflxw,hflxe,hflxs,hflxn,                &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
-                   doazimwrite,dorestart,							 &
+                   dotmcalc,doazimwrite,dorestart,					 &
                    ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 20.01.23.)
         ! end_solve2
 
