@@ -4037,7 +4037,7 @@
         if(timestats.ge.1) time_write=time_write+mytime()
       endif
 
-		print *,'Ivan: writeout done'
+	  !print *,'Ivan: writeout done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
