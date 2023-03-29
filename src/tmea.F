@@ -846,7 +846,7 @@
         
 		print *,'THE BIG LOOP BEGINS'
         DO n = 1, ntmea+ntmea2d
-		  print *,'  n = ',n
+		  !print *,'  n = ',n
           if (trim(name_tmea(n)).eq.'hpbl_TM') then
             !$omp parallel do default(shared)  &
             !$omp private(i,j)
@@ -2670,7 +2670,7 @@
             call stopcm1
 
           endif
-		print *,'loop ended ',n
+		!print *,'loop ended ',n
         ENDDO
 
       end subroutine calc_tmea

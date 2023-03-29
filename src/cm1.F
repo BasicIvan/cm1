@@ -3936,7 +3936,7 @@
             enddo
           endif
           !if(timestats.ge.1) time_turbdiag = time_turbdiag+mytime()
-
+		print *,'if dotmcalc is done.'
         endif
       ENDIF
 
