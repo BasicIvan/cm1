@@ -361,7 +361,7 @@
     ! Ivan Basic, 23.01.23:
     write_tmea = .false.
     do ntmea_write = 1, ntmea2d
-        if ( trim(name_output(n_out)).eq.trim(name_tmea(ntmea_write)) ) then
+        if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then !Ivan Basic 29.03.23. n_out -> nloop
         	write_tmea = .true.
             exit
         endif
@@ -3195,7 +3195,7 @@
   	! Ivan Basic 06.02.23.
   	write_tmea = .false.
         do ntmea_write = 1+ntmea2d, ntmea+ntmea2d
-          if ( trim(name_output(n)).eq.trim(name_tmea(ntmea_write)) ) then
+          if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then
             write_tmea = .true.
             exit
           endif

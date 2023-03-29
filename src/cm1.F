@@ -3937,10 +3937,10 @@
             enddo
           endif
           !if(timestats.ge.1) time_turbdiag = time_turbdiag+mytime()
-		print *,'if dotmcalc is done.'
+		!print *,'if dotmcalc is done.'
         endif
       ENDIF
-	 print *,'Ivan: calc_tke_sg and calc_tmea done...'
+	 !print *,'Ivan: calc_tke_sg and calc_tmea done...'
 !      if( restarted )then
 !        nwrite = nwrite-1
 !        taptim = taptim-tapfrq
