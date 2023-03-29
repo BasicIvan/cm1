@@ -2763,7 +2763,7 @@
           enddo
 
         endif
-		print *,'  calc_tke routine done. '
+		!print *,'  calc_tke routine done. '
       end subroutine calc_tke_sg
 
       subroutine getavgy(s,savg,nkm)
