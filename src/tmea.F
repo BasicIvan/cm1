@@ -740,7 +740,7 @@
         integer :: n_ymea,n_stdymea,n_dry,n_cs,n_alphay,n_wu,n_we,n_thu,n_the,n_qvu,n_qve
 
         real, dimension(jb:je,kb:ke) :: dumyz
-		print *,'  Done with declarations.'
+		!print *,'  Done with declarations.'
         csm = 1.0
 
         do j=0,nj+1
@@ -766,7 +766,7 @@
           enddo
           enddo
         enddo
-        print *,'  Done with th'
+        !print *,'  Done with th'
 
         ! do k=1,nk
         ! do j=1,nj
@@ -789,7 +789,7 @@
           enddo
           enddo
           enddo
-			print *,'  done with dthdx'
+			!print *,'  done with dthdx'
           do k=1,nk
           do j=1,nj+1
           do i=1,ni
@@ -799,7 +799,7 @@
           enddo
           enddo
           enddo
-			print *,'  done with dthdy'
+			!print *,'  done with dthdy'
           do k=1,nk
           do j=1,nj
           do i=1,ni
@@ -807,7 +807,7 @@
           enddo
           enddo
           enddo
-			print *,'  done with dthdzs'
+			!print *,'  done with dthdzs'
         else
 
           dthdx = 0.0
@@ -823,7 +823,7 @@
         enddo
         enddo
         enddo
-        print *,'  done with dthdz'
+        !print *,'  done with dthdz'
 
         ! do i=1,ni
         ! do j=1,nj
@@ -842,9 +842,9 @@
         enddo
         enddo
         enddo
-        print *,'  done with dqvdz'
+        !print *,'  done with dqvdz'
         
-		print *,'THE BIG LOOP BEGINS'
+		!print *,'THE BIG LOOP BEGINS'
         DO n = 1, ntmea+ntmea2d
 		  !print *,'  n = ',n
           if (trim(name_tmea(n)).eq.'hpbl_TM') then

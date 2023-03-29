@@ -3147,6 +3147,7 @@
 
 
     !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
+    print *,'Ivan: timeloop...'
     timeloop:  &
     DO WHILE( mtime.lt.timax )
 
@@ -3939,7 +3940,7 @@
 		print *,'if dotmcalc is done.'
         endif
       ENDIF
-
+	 print *,'Ivan: calc_tke_sg and calc_tmea done...'
 !      if( restarted )then
 !        nwrite = nwrite-1
 !        taptim = taptim-tapfrq
@@ -4035,7 +4036,7 @@
         if(timestats.ge.1) time_write=time_write+mytime()
       endif
 
-
+		print *,'Ivan: writeout done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4077,7 +4078,7 @@
       ENDIF
       endif
 
-
+		print *,'Ivan: parcl done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4151,7 +4152,7 @@
       endif
     ENDIF
 
-
+		print *,'Ivan: domaindiag end'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4209,7 +4210,7 @@
       endif
     ENDIF
 
-
+		print *,'Ivan: dohifrq done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4271,7 +4272,7 @@
       endif
     ENDIF
 
-
+		print *,'Ivan: doazimavg done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4437,8 +4438,9 @@
       startup = .false.
       restarted = .false.
 
-
+	print *,'Ivan: the end of timeloop. mtime=',mtime
     ENDDO  timeloop
+    print *,'Ivan: timeloop ended'
     !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
 
 
