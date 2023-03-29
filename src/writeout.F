@@ -6662,9 +6662,10 @@
         grid_output(n_out) = 's'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
       enddo
       
-	  if ( write_tmea ) then
+	  
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
+        if ( write_tmea ) then
           do k=1,maxk
           do j=1,nj
           do i=1,ni
