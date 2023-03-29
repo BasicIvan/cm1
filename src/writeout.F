@@ -3134,6 +3134,7 @@
       
           !$omp parallel do default(shared)  &
           !$omp private(i,j)
+      if( write_tmea ) then
           do j=1,nj
           do i=1,ni
             dum2d(i,j) = tmea(i,j,1,ntmea_write)
@@ -3141,7 +3142,7 @@
           enddo
 
         call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
-      
+      endif
     endif
   !.............................................
 
@@ -6661,7 +6662,7 @@
         grid_output(n_out) = 's'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
       enddo
       
-
+	  if ( write_tmea ) then
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,maxk
@@ -6672,6 +6673,7 @@
           enddo
           enddo
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)      
+      endif
     endif
   !.............................................
 

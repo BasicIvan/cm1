@@ -3951,6 +3951,7 @@
 
       if( dowriteout )then
       otype:  &
+      !print *,'if dotmcalc is done.'
       IF(output_format.eq.1.or.output_format.eq.2)THEN
         nn = 1
         if(terrain_flag .and. output_interp.eq.1) nn = 2
