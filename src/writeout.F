@@ -3124,6 +3124,7 @@
 
 	! Ivan Basic 24.01.23.
     if( dotmea )then
+     if( write_tmea ) then
       do n = 1, ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
@@ -3134,7 +3135,6 @@
       
           !$omp parallel do default(shared)  &
           !$omp private(i,j)
-      if( write_tmea ) then
           do j=1,nj
           do i=1,ni
             dum2d(i,j) = tmea(i,j,1,ntmea_write)
@@ -3142,7 +3142,7 @@
           enddo
 
         call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
-      endif
+     endif
     endif
   !.............................................
 
@@ -6654,6 +6654,7 @@
 
     ! Ivan Basic 24.01.23.
     if( dotmea )then   
+     if ( write_tmea ) then
       do n = 1+ntmea2d, ntmea+ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
@@ -6665,7 +6666,6 @@
 	  
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
-        if ( write_tmea ) then
           do k=1,maxk
           do j=1,nj
           do i=1,ni
@@ -6674,7 +6674,7 @@
           enddo
           enddo
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)      
-      endif
+     endif
     endif
   !.............................................
 
