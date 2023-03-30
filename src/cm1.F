@@ -3147,7 +3147,7 @@
 
 
     !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
-    print *,'Ivan: timeloop...'
+    !print *,'Ivan: timeloop...'
     timeloop:  &
     DO WHILE( mtime.lt.timax )
 
@@ -4079,7 +4079,7 @@
       ENDIF
       endif
 
-		print *,'Ivan: parcl done'
+		!print *,'Ivan: parcl done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4153,7 +4153,7 @@
       endif
     ENDIF
 
-		print *,'Ivan: domaindiag end'
+		!print *,'Ivan: domaindiag end'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4211,7 +4211,7 @@
       endif
     ENDIF
 
-		print *,'Ivan: dohifrq done'
+		!print *,'Ivan: dohifrq done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4273,7 +4273,7 @@
       endif
     ENDIF
 
-		print *,'Ivan: doazimavg done'
+		!print *,'Ivan: doazimavg done'
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
@@ -4439,9 +4439,9 @@
       startup = .false.
       restarted = .false.
 
-	print *,'Ivan: the end of timeloop. mtime=',mtime
+	!print *,'Ivan: the end of timeloop. mtime=',mtime
     ENDDO  timeloop
-    print *,'Ivan: timeloop ended'
+    !print *,'Ivan: timeloop ended'
     !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
 
 
