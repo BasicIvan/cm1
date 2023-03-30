@@ -194,8 +194,8 @@
       character(len=60), intent(in), dimension(maxvars) :: desc_tmea
       character(len=40), intent(in), dimension(maxvars) :: name_tmea,unit_tmea
       real, intent(in), dimension(ib:ie,jb:je,kb:ke,ntmea) :: tmea
-      integer :: ntmea_write
-      logical :: write_tmea
+      !integer :: ntmea_write
+      !logical :: write_tmea
 
       integer :: i,j,k,n,nn,im,ip,nloop,nmax
       integer :: ncid,time_index,varid
@@ -359,13 +359,13 @@
     ! 2d s-staggered variables:
 
     ! Ivan Basic, 23.01.23:
-    write_tmea = .false.
-    do ntmea_write = 1, ntmea2d
-        if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then !Ivan Basic 29.03.23. n_out -> nloop
-        	write_tmea = .true.
-            exit
-        endif
-    enddo
+    !write_tmea = .false.
+    !do ntmea_write = 1, ntmea2d
+    !    if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then !Ivan Basic 29.03.23. n_out -> nloop
+    !    	write_tmea = .true.
+    !        exit
+    !    endif
+    !enddo
 
   !.............................................
 
@@ -3124,25 +3124,24 @@
 
 	! Ivan Basic 24.01.23.
     if( dotmea )then
-     if( write_tmea ) then
       do n = 1, ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
         desc_output(n_out) = desc_tmea(n)
         unit_output(n_out) = unit_tmea(n)
         grid_output(n_out) = '2'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
-      enddo
+      
       
           !$omp parallel do default(shared)  &
           !$omp private(i,j)
           do j=1,nj
           do i=1,ni
-            dum2d(i,j) = tmea(i,j,1,ntmea_write)
+            dum2d(i,j) = tmea(i,j,1,n) !ntmea_write -> n
           enddo
           enddo
 
         call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
-     endif
+      enddo
     endif
   !.............................................
 
@@ -3194,13 +3193,13 @@
 
   !.............................................
   	! Ivan Basic 06.02.23.
-  	write_tmea = .false.
-        do ntmea_write = 1+ntmea2d, ntmea+ntmea2d
-          if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then
-            write_tmea = .true.
-            exit
-          endif
-        enddo
+  	!write_tmea = .false.
+    !    do ntmea_write = 1+ntmea2d, ntmea+ntmea2d
+    !      if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then
+    !        write_tmea = .true.
+    !        exit
+    !      endif
+    !    enddo
 
     if(output_zh     .eq.1)then
       n_out = n_out + 1
@@ -6654,14 +6653,13 @@
 
     ! Ivan Basic 24.01.23.
     if( dotmea )then   
-     if ( write_tmea ) then
       do n = 1+ntmea2d, ntmea+ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
         desc_output(n_out) = desc_tmea(n)
         unit_output(n_out) = unit_tmea(n)
         grid_output(n_out) = 's'     ! s=scalar pts (3d) ; u=u pts (3d) ; v=v pts (3d) ; w=w pts (3d) ; 2=2d scalar pts
-      enddo
+      
       
 	  
           !$omp parallel do default(shared)  &
@@ -6669,12 +6667,13 @@
           do k=1,maxk
           do j=1,nj
           do i=1,ni
-            dum1(i,j,k) = tmea(i,j,k,ntmea_write)
+            dum1(i,j,k) = tmea(i,j,k,n) !ntmea_write -> n
           enddo
           enddo
           enddo
+          
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)      
-     endif
+     enddo
     endif
   !.............................................
 
@@ -9691,8 +9690,8 @@
 
           if(dowr) write(outfile,*) '  Opening ',trim(string)
           open(unit=fnum,file=string,form='unformatted',access='direct',   &
-               recl=(nx*4),status='unknown') ! Ivan Basic 23.03.2023. just to make it same as Jan's
-               !recl=(nx*ny*4),status='unknown')
+          		recl=(nx*ny*4),status='unknown')
+               !recl=(nx*4),status='unknown') ! Ivan Basic 23.03.2023. just to make it same as Jan's
           opens = .true.
 !beh3
 
