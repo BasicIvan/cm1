@@ -3123,7 +3123,7 @@
     ENDIF
 
 	! Ivan Basic 24.01.23.
-    if( dotmea )then
+    IF( dotmea )then
       do n = 1, ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
@@ -3142,7 +3142,7 @@
 
         call   write2d(dum2d,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out))
       enddo
-    endif
+    ENDIF
   !.............................................
 
     out2dcheck:  &
@@ -6652,7 +6652,7 @@
       ENDIF
 
     ! Ivan Basic 24.01.23.
-    if( dotmea )then   
+    IF( dotmea ) then   
       do n = 1+ntmea2d, ntmea+ntmea2d
         n_out = n_out + 1
         name_output(n_out) = name_tmea(n)
@@ -6674,7 +6674,7 @@
           
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),sigma,zs,zh,dum9)      
      enddo
-    endif
+    ENDIF
   !.............................................
 
 

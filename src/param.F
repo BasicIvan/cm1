@@ -5895,7 +5895,7 @@
       kd_adv   = 0
       kd_turb  = 0
 
-      IF( idopbl .and. doturbdiag .and. iusetke )THEN
+      IF( idopbl .and. iusetke )THEN ! Ivan Basic .and doturbdiag 30.03.23.
 
         ibdk = ib
         iedk = ie

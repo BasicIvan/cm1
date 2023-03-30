@@ -40,7 +40,7 @@
       use restart_read_module, only : restart_read
       use radiation_module, only : radiation_driver
       use radtrns3d_module, only : nrad2d,n2d_radiat,n3d_radiat
-      use domaindiag_module !, only : domaindiag ! Ivan Basic 21.03.23.
+      use domaindiag_module, only : domaindiag ! Ivan Basic 21.03.23.
       use azimavg_module
       use hifrq_module, only : writeout_hifrq
       use parcel_module
@@ -212,15 +212,6 @@
       ! miscellaneous output:
       real, dimension(:,:,:),   allocatable :: out2d
       real, dimension(:,:,:,:), allocatable :: out3d
-      
-      ! Ivan Basic 19.01.23.
-      integer :: ncalctm
-      double precision :: tmeatim
-      character(len=60), dimension(maxvars) :: desc_tmea
-      character(len=40), dimension(maxvars) :: name_tmea,unit_tmea
-      real, dimension(:,:,:), allocatable :: ulast,vlast,wlast,thlast
-      real, dimension(:,:,:,:), allocatable :: tmea,tke_sg,qlast
-      logical :: dotmcalc
 
       ! for output using cylindrical coords:
       integer, dimension(:,:), allocatable :: cir
@@ -253,6 +244,15 @@
       double precision, dimension(:,:,:,:), allocatable :: sfctavg
       real, dimension(:,:,:), allocatable :: sfctimavg
 
+      ! Ivan Basic 19.01.23.
+      integer :: ncalctm
+      double precision :: tmeatim
+      character(len=60), dimension(maxvars) :: desc_tmea
+      character(len=40), dimension(maxvars) :: name_tmea,unit_tmea
+      real, dimension(:,:,:), allocatable :: ulast,vlast,wlast,thlast
+      real, dimension(:,:,:,:), allocatable :: tmea,tke_sg,qlast
+      logical :: dotmcalc
+      
 !-----
 
       integer count,rate,maxr
