@@ -588,89 +588,89 @@
           endif
         endif
 
-        if (iptra.eq.1) then
+        !if (iptra.eq.1) then
           ! === conditional sampling === !
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
-          desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
-          unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
-          desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
-          unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'cs_dry'
-          desc_tmea(ntmea+ntmea2d) = 'cs from y mean (dry)'
-          unit_tmea(ntmea+ntmea2d) = 'boolean'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'cs_dry'
+          !desc_tmea(ntmea+ntmea2d) = 'cs from y mean (dry)'
+          !unit_tmea(ntmea+ntmea2d) = 'boolean'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'cs'
-          desc_tmea(ntmea+ntmea2d) = 'cs from y mean'
-          unit_tmea(ntmea+ntmea2d) = 'boolean'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'cs'
+          !desc_tmea(ntmea+ntmea2d) = 'cs from y mean'
+          !unit_tmea(ntmea+ntmea2d) = 'boolean'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'alpha_y'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'alpha_y'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'alpha_y_TM'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'alpha_y_TM'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'w_u'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !!ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'w_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'w_e'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'w_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'th_u'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'th_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'th_e'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'th_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'qv_u'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qv_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'qv_e'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qv_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'wth_u'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wth_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'wth_e'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wth_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'wqv_u'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wqv_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'wqv_e'
-          desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
-          unit_tmea(ntmea+ntmea2d) = 'unit'
-        endif
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wqv_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+        !endif
 
       end subroutine setup_tmea
 
