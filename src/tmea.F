@@ -597,18 +597,18 @@
           endif
         endif
 
-        !if (iptra.eq.1) then
+        if (iptra.eq.1) then
           ! === conditional sampling === !
 
-          !ntmea = ntmea + 1
-          !name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
-          !desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
-          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
+          desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
 
-          !ntmea = ntmea + 1
-          !name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
-          !desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
-          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
+          desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
 
           !ntmea = ntmea + 1
           !name_tmea(ntmea+ntmea2d) = 'cs_dry'
@@ -679,7 +679,7 @@
           !name_tmea(ntmea+ntmea2d) = 'wqv_e'
           !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
           !unit_tmea(ntmea+ntmea2d) = 'unit'
-        !endif
+        endif
 
       end subroutine setup_tmea
 
