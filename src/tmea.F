@@ -151,6 +151,15 @@
           desc_tmea(ntmea+ntmea2d) = 'TM subgrid turbulence kinetic energy interp'
           unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
         endif
+        
+        if (iptra.eq.1) then
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'pt1_TM'
+          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged'
+          unit_tmea(ntmea+ntmea2d) = 'tracer concentration' ! Ivan Basic 04.08.2023.
+          
+        endif
 
         ! === for calculating covariances === !
         ! if (terrain_flag) then
@@ -588,18 +597,18 @@
           endif
         endif
 
-        if (iptra.eq.1) then
+        !if (iptra.eq.1) then
           ! === conditional sampling === !
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
-          desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
-          unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
 
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
-          desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
-          unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'tracer concentration'
 
           !ntmea = ntmea + 1
           !name_tmea(ntmea+ntmea2d) = 'cs_dry'
@@ -670,7 +679,7 @@
           !name_tmea(ntmea+ntmea2d) = 'wqv_e'
           !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
           !unit_tmea(ntmea+ntmea2d) = 'unit'
-        endif
+        !endif
 
       end subroutine setup_tmea
 
@@ -1085,6 +1094,17 @@
             do j=1,nj
             do i=1,ni
               tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(tkea(i,j,k)+tkea(i,j,k+1)) - tmea(i,j,k,n) )/dble(ncalctm) ! subgrid
+            enddo
+            enddo
+            enddo
+            
+          elseif (trim(name_tmea(n)).eq.'pt1_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,1)+pta(i,j,k+1,1)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023.
             enddo
             enddo
             enddo
