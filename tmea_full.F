@@ -48,6 +48,16 @@
           name_tmea(ntmea2d) = 'cin_TM  '
           desc_tmea(ntmea2d) = 'TM convective inhibition'
           unit_tmea(ntmea2d) = 'J/kg'
+
+          ntmea2d = ntmea2d + 1
+          name_tmea(ntmea2d) = 'lcl_TM  '
+          desc_tmea(ntmea2d) = 'TM lifted condensation level'
+          unit_tmea(ntmea2d) = 'm'
+
+          ntmea2d = ntmea2d + 1
+          name_tmea(ntmea2d) = 'lfc_TM  '
+          desc_tmea(ntmea2d) = 'TM level of free convection'
+          unit_tmea(ntmea2d) = 'm'
         endif
 
         ntmea = 0
@@ -62,17 +72,62 @@
         desc_tmea(ntmea+ntmea2d) = 'TM potential temperature'
         unit_tmea(ntmea+ntmea2d) = 'K'
 
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'thten_TM'
+        ! desc_tmea(ntmea+ntmea2d) = 'TM potential temperature'
+        ! unit_tmea(ntmea+ntmea2d) = 'K'
+
+        ! if (terrain_flag) then
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'dthdx_TM'
+        !   desc_tmea(ntmea+ntmea2d) = 'TM potential temperature x deriv'
+        !   unit_tmea(ntmea+ntmea2d) = 'K'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'dthdy_TM'
+        !   desc_tmea(ntmea+ntmea2d) = 'TM potential temperature x deriv'
+        !   unit_tmea(ntmea+ntmea2d) = 'K'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'dthdz_TM'
+        !   desc_tmea(ntmea+ntmea2d) = 'TM potential temperature z deriv'
+        !   unit_tmea(ntmea+ntmea2d) = 'K'
+        ! endif
+
         ntmea = ntmea + 1
         name_tmea(ntmea+ntmea2d) = 'prs_TM  '
         desc_tmea(ntmea+ntmea2d) = 'TM pressure'
         unit_tmea(ntmea+ntmea2d) = 'Pa'
 
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'dpdz_TM '
+        ! desc_tmea(ntmea+ntmea2d) = 'TM pressure z deriv'
+        ! unit_tmea(ntmea+ntmea2d) = 'Pa/m'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'rho_TM  '
+        desc_tmea(ntmea+ntmea2d) = 'TM dry-air density'
+        unit_tmea(ntmea+ntmea2d) = 'kg/m^3'
 
         if (imoist.eq.1) then
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'qv_TM  '
           desc_tmea(ntmea+ntmea2d) = 'TM water vapor mixing ratio'
           unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+          if (nqc.ge.1) then
+            ntmea = ntmea + 1
+            name_tmea(ntmea+ntmea2d) = 'qc_TM  '
+            desc_tmea(ntmea+ntmea2d) = 'TM moisture quantities'
+            unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+          endif
+
+          if (nqr.ge.1) then
+            ntmea = ntmea + 1
+            name_tmea(ntmea+ntmea2d) = 'qr_TM  '
+            desc_tmea(ntmea+ntmea2d) = 'TM moisture quantities'
+            unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+          endif
         endif
 
         ntmea = ntmea + 1
@@ -106,6 +161,34 @@
           
         endif
 
+        ! === for calculating covariances === !
+        ! if (terrain_flag) then
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'u_dthdx '
+        !   desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        !   unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'v_dthdy '
+        !   desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        !   unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'w_dthdz '
+        !   desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        !   unit_tmea(ntmea+ntmea2d) = 'K m/s'
+        ! endif
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'th_th   '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'th_th_SG'
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K^2'
+
         ntmea = ntmea + 1
         name_tmea(ntmea+ntmea2d) = 'u_u     '
         desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
@@ -120,6 +203,483 @@
         name_tmea(ntmea+ntmea2d) = 'w_w     '
         desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
         unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_w     '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_w_SG  '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'v_w     '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_th    '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_th_SG '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'v_th_SG '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_th    '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_th_SG '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_u_w   '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^3/s^3'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'v_v_w   '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^3/s^3'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_w_w   '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'm^3/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_p     '
+        ! desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        ! unit_tmea(ntmea+ntmea2d) = 'Pa m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_w_th  '
+        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        unit_tmea(ntmea+ntmea2d) = 'K m^2/s^2'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'th_dpdz '
+        ! desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        ! unit_tmea(ntmea+ntmea2d) = 'K Pa/m'
+
+        if (imoist.eq.1) then
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qv_qv   '
+          desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+          unit_tmea(ntmea+ntmea2d) = 'kg^2/kg^2'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'w_qv    '
+          desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'w_qv_SG '
+          desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'w_w_qv  '
+          desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg m^2/s^2'
+        endif
+
+        ! ! === resolved TKE budget === !
+        ! ! only valid with implicit diffusion (odd ordered advection scheme)
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_buoy_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_prs_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_adv_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_turb_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_diff_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ! === resolved TKE budget === !
+        ! ! = ensemble means = !
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_buoy  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'u_prs  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'v_prs  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_prs  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'u_adv   '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'v_adv   '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_adv   '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'u_turb  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'v_turb  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_turb  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'u_diff  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'v_diff  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'w_diff  '
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved TKE budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'm^2/s^3'
+
+        ! ! === subgrid TKE budget === !
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_shear_sg'
+        ! desc_tmea(ntmea+ntmea2d) = 'subgrid tke budget: shear term'
+        ! unit_tmea(ntmea+ntmea2d) = 'm2/s3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_buoy_sg'
+        ! desc_tmea(ntmea+ntmea2d) = 'subgrid tke budget: buoyancy term'
+        ! unit_tmea(ntmea+ntmea2d) = 'm2/s3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_diss_sg'
+        ! desc_tmea(ntmea+ntmea2d) = 'subgrid tke budget: dissipation term'
+        ! unit_tmea(ntmea+ntmea2d) = 'm2/s3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_adv_sg'
+        ! desc_tmea(ntmea+ntmea2d) = 'subgrid tke budget: advection term'
+        ! unit_tmea(ntmea+ntmea2d) = 'm2/s3'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'tke_diff_sg'
+        ! desc_tmea(ntmea+ntmea2d) = 'subgrid tke budget: diffusion term'
+        ! unit_tmea(ntmea+ntmea2d) = 'm2/s3'
+
+        ! ! === resolved wth budget === !
+        ! ! only valid with implicit diffusion (odd ordered advection scheme)
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'wth_buoy_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'wth_prs_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'wth_adv_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'wth_turb_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        ! ntmea = ntmea + 1
+        ! name_tmea(ntmea+ntmea2d) = 'wth_diff_res'
+        ! desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        ! unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        ! if (imoist.eq.1) then
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wth_mp_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wth_div_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'K m/s^2'
+        ! endif
+
+        ! === resolved wth budget === !
+        ! = ensemble means = !
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'th_adv  '
+        desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        unit_tmea(ntmea+ntmea2d) = 'K/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'th_turb '
+        desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        unit_tmea(ntmea+ntmea2d) = 'K/s'
+
+        !ntmea = ntmea + 1
+        !name_tmea(ntmea+ntmea2d) = 'th_diff '
+        !desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+        !unit_tmea(ntmea+ntmea2d) = 'K/s'
+        
+        if (imoist.eq.1) then
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'th_mp   '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+          unit_tmea(ntmea+ntmea2d) = 'K/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'th_div  '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+          unit_tmea(ntmea+ntmea2d) = 'K/s'
+        endif
+
+        if (td_rad.ge.1) then
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'th_rad  '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+          unit_tmea(ntmea+ntmea2d) = 'K/s'
+        endif
+
+        if (td_pbl.ge.1) then
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'th_pbl  '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wth budget'
+          unit_tmea(ntmea+ntmea2d) = 'K/s'
+        endif
+
+        if (imoist.eq.1) then
+        !   ! === resolved wqv budget === !
+        !   ! only valid with implicit diffusion (odd ordered advection scheme)
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_buoy_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_prs_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_adv_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_turb_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_diff_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+        !   ntmea = ntmea + 1
+        !   name_tmea(ntmea+ntmea2d) = 'wqv_mp_res'
+        !   desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+        !   unit_tmea(ntmea+ntmea2d) = 'kg/kg m/s^2'
+
+          ! === resolved wqv budget === !
+          ! = ensemble means = !
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qv_adv  '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qv_turb '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qv_diff '
+          !desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+          !unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qv_mp   '
+          desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          if (qd_pbl.ge.1) then
+            ntmea = ntmea + 1
+            name_tmea(ntmea+ntmea2d) = 'qv_pbl  '
+            desc_tmea(ntmea+ntmea2d) = 'resolved wqv budget'
+            unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+          endif
+
+          ! === qc budget === !
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qc_adv  '
+          desc_tmea(ntmea+ntmea2d) = 'qc budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qc_turb '
+          desc_tmea(ntmea+ntmea2d) = 'qc budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qc_diff '
+          !desc_tmea(ntmea+ntmea2d) = 'qc budget'
+          !unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'qc_mp   '
+          desc_tmea(ntmea+ntmea2d) = 'qc budget'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+
+          if (qcd_pbl.ge.1) then
+            ntmea = ntmea + 1
+            name_tmea(ntmea+ntmea2d) = 'qc_pbl  '
+            desc_tmea(ntmea+ntmea2d) = 'qc budget'
+            unit_tmea(ntmea+ntmea2d) = 'kg/kg 1/s'
+          endif
+        endif
+
+        !if (iptra.eq.1) then
+          ! === conditional sampling === !
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'pt1_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'passive tracer averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'std_tm_ym'
+          !desc_tmea(ntmea+ntmea2d) = 'standard deviation averaged'
+          !unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'cs_dry'
+          !desc_tmea(ntmea+ntmea2d) = 'cs from y mean (dry)'
+          !unit_tmea(ntmea+ntmea2d) = 'boolean'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'cs'
+          !desc_tmea(ntmea+ntmea2d) = 'cs from y mean'
+          !unit_tmea(ntmea+ntmea2d) = 'boolean'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'alpha_y'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'alpha_y_TM'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !!ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'w_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'w_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'th_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'th_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qv_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'qv_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wth_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wth_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wqv_u'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+
+          !ntmea = ntmea + 1
+          !name_tmea(ntmea+ntmea2d) = 'wqv_e'
+          !desc_tmea(ntmea+ntmea2d) = 'conditional sampling'
+          !unit_tmea(ntmea+ntmea2d) = 'unit'
+        !endif
 
       end subroutine setup_tmea
 
