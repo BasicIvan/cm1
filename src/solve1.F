@@ -231,8 +231,9 @@
       integer :: reqp1,reqp2
 #endif
 
-      real, dimension(ib:ie,jb:je,npt) :: ptflux !Ivan Basic 12.09.2022.
-      ptflux = 1.0e-7 ! Units should be: kg m-2 s-1
+      real, dimension(ib:ie,jb:je,npt) :: ptflux1, ptflux2 !Ivan Basic 12.09.2022.
+      ptflux1 = 1.1e-7 !CO2
+      ptflux2 = 7.1e-11 !CH4
 !--------------------------------------------------------------------
 
 #ifdef MPI
@@ -1287,10 +1288,17 @@
           !Ivan Basic: set the 1st parameter from 0 to 1 (call turbs(1,...)). June 2022
           !Ivan Basic: replaced qvflux with the custom "ptflux" (call turbs(...,qvflux,...)). June 2022
           do n=1,npt
-            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux,   &
+          	if(n.eq.1)then
+            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux1,   &
                        rds,sigma,rdsf,sigmaf,mh,mf,gz,rgz,gzu,rgzu,gzv,rgzv,gx,gxu,gy,gyv, &
                        dum1,dum2,dum3,dum4,dum5,sten,rho,rr,rf,pta(ib,jb,kb,n),ptten(ib,jb,kb,n),khh,khv,cm0,dum7,dum8, &
                        .false.,ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,qdiag,1,1,0)
+            elseif(n.eq.2)then
+            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux2,   &
+                       rds,sigma,rdsf,sigmaf,mh,mf,gz,rgz,gzu,rgzu,gzv,rgzv,gx,gxu,gy,gyv, &
+                       dum1,dum2,dum3,dum4,dum5,sten,rho,rr,rf,pta(ib,jb,kb,n),ptten(ib,jb,kb,n),khh,khv,cm0,dum7,dum8, &
+                       .false.,ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,qdiag,1,1,0)
+            endif
           enddo
         ENDIF
 

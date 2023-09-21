@@ -48,6 +48,16 @@
           name_tmea(ntmea2d) = 'cin_TM  '
           desc_tmea(ntmea2d) = 'TM convective inhibition'
           unit_tmea(ntmea2d) = 'J/kg'
+
+          ntmea2d = ntmea2d + 1
+          name_tmea(ntmea2d) = 'lcl_TM  '
+          desc_tmea(ntmea2d) = 'TM lifted condensation level'
+          unit_tmea(ntmea2d) = 'm'
+
+          ntmea2d = ntmea2d + 1
+          name_tmea(ntmea2d) = 'lfc_TM  '
+          desc_tmea(ntmea2d) = 'TM level of free convection'
+          unit_tmea(ntmea2d) = 'm'
         endif
 
         ntmea = 0
@@ -101,8 +111,13 @@
 
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'pt1_TM'
-          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged'
-          unit_tmea(ntmea+ntmea2d) = 'tracer concentration' ! Ivan Basic 04.08.2023.
+          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged (CO2)'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 04.08.2023.
+          
+          ntmea = ntmea + 1
+          name_tmea(ntmea+ntmea2d) = 'pt2_TM'
+          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged (CH4)'
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 21.09.2023.
           
         endif
 
@@ -545,6 +560,17 @@
             do j=1,nj
             do i=1,ni
               tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,1)+pta(i,j,k+1,1)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023.
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'pt2_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,2)+pta(i,j,k+1,2)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023., 21.09.2023.
             enddo
             enddo
             enddo
@@ -2124,7 +2150,7 @@
             call stopcm1
 
           endif
-		!print *,'loop ended ',n
+		!print *,'THE BIG LOOP ENDS'
         ENDDO
 
       end subroutine calc_tmea
