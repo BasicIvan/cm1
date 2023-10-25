@@ -328,15 +328,15 @@
       do i=ibp,iep
         if(n.eq.1)then
         !CO2
-          pta(i,j,k,n)=0.00041*44/29
+          pta(i,j,k,n)=0.00041
           !if(zh(i,j,k).lt.100.0) pta(i,j,k,n)=0.00041*44/29 ! conversion from ppm to kg/kg. mol mass of CO2 / mol mass of dry air. Ivan Basic (13.09.2022)
           !if(zh(i,j,k).lt.100.0.and.xh(i,j,k).lt.50.and.xh(i,j,k).gt.-50.and.yh(i,j,k).lt.50.and.yh(i,j,k).gt.-50) pta(i,j,k,n)=0.41 !Ivan Basic (12.09.2022)
         endif
         if(n.eq.2)then
         !CH4
-          pta(i,j,k,n)=0.0
+          pta(i,j,k,n)=0.000002
           !if(zh(i,j,k).gt.3000.0.and.zh(i,j,k).lt.6000.0) pta(i,j,k,n)=0.0001
-          if(zh(i,j,k).lt.400.0) pta(i,j,k,n)=0.000002*16/29
+          !if(zh(i,j,k).lt.400.0) pta(i,j,k,n)=0.000002*16/29
         endif
         if(n.eq.3)then
           pta(i,j,k,n)=0.0
