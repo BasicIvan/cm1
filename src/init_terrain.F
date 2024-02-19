@@ -84,7 +84,7 @@
 !  itern = 5
 !  valley between two cosine mountains ! Jan Weinkaemmerer, 02.10.19
 
-        IF(itern.eq.5)THEN
+        ELSEIF(itern.eq.5)THEN
 
           hh =        var1             ! max. height (m)
           aa =        var2             ! valley width (m)
