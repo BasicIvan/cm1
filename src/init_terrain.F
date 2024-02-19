@@ -61,6 +61,26 @@
 !-----------------------------------------------------------------------
 
 !----------------------------------------------------------
+!  itern = 6
+!  valley within a plateau (a basin set within otherwise flat terrain)
+!  Similar to Sheridan (2019)
+!  Ivan Basic 19.02.2024.
+
+        IF(itern.eq.6)THEN
+
+          hh =        var1             ! max. height (m)
+          aa =        var2             ! valley width (m)
+          xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
+          do j=jb,je
+          do i=ib,ie
+            IF(abs(xh(i)-xc)<aa/2)THEN
+            	zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc)/aa) )
+            ELSE 
+            	zs(i,j)= hh
+            ENDIF
+          enddo
+          enddo
+!----------------------------------------------------------
 !  itern = 5
 !  valley between two cosine mountains ! Jan Weinkaemmerer, 02.10.19
 
