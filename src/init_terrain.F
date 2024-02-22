@@ -61,8 +61,35 @@
 !-----------------------------------------------------------------------
 
 !----------------------------------------------------------
+!  itern = 7
+!  a valley with a flat bottom
+!  Similar to Sheridan (2019)
+!  Ivan Basic 19.02.2024.
+
+        IF(itern.eq.6)THEN
+
+          hh =        var1             ! max. height (m)
+          aa =        var2             ! valley width (m)
+          bb =		  var3			   ! basin width (m)
+          xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
+          do j=jb,je
+          do i=ib,ie
+            IF(abs(xh(i)-xc)>bb/2)THEN
+              IF(xh(i)<0)THEN
+                zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc+bb/2)/aa) )
+              ELSE
+                zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc-bb/2)/aa) )
+              ENDIF
+            	
+            ELSE 
+            	zs(i,j)= 0.0
+            ENDIF
+          enddo
+          enddo
+          
+!----------------------------------------------------------
 !  itern = 6
-!  valley within a plateau (a basin set within otherwise flat terrain)
+!  valley within a plateau
 !  Similar to Sheridan (2019)
 !  Ivan Basic 19.02.2024.
 
