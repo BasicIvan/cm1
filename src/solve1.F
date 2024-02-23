@@ -251,6 +251,11 @@
       doubud = .false.
       dovbud = .false.
       dowbud = .false.
+      
+      print *,'  Ivan Basic: ib = ',ib
+      print *,'  Ivan Basic: ie = ',ie
+      print *,'  Ivan Basic: jb = ',jb
+      print *,'  Ivan Basic: je = ',je
 
 	  !Ivan Basic 06.02.23
       ! Do the budgets for online time averaging, too. Budgets have to be prepared in param.F.

@@ -3084,7 +3084,7 @@
         dostat      = .true.
         dowriteout  = .true.
         doprclout   = .true.
-        dotdwrite   = .false.           ! Ivan Basic 18.11.22. WIth .true., there is an error with terrain.
+        dotdwrite   = .false.           ! Ivan Basic 18.11.22. (if .true., there is an error with terrain.)
         dotmcalc    = .true. 			! Ivan Basic 20.01.23.
         doazimwrite = .true.
         dohifrqwrite = .true.
