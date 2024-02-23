@@ -65,6 +65,7 @@
 !  a valley with a flat bottom
 !  Similar to Sheridan (2019)
 !  Ivan Basic 19.02.2024.
+		print *,'  xh(i) = ',xh(i)
 
         IF(itern.eq.7)THEN
 
@@ -74,6 +75,8 @@
           xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
           do j=jb,je
           do i=ib,ie
+            print *,'  xh(i) = ',xh(i)
+            print *,'  abs(xh(i)) = ',abs(xh(i))
             IF(abs(xh(i)-xc)<bb/2)THEN
               zs(i,j) = 0.0
             ELSEIF(abs(xh(i)-xc)>aa/2)THEN
