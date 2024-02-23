@@ -66,7 +66,7 @@
 !  Similar to Sheridan (2019)
 !  Ivan Basic 19.02.2024.
 
-        IF(itern.eq.6)THEN
+        IF(itern.eq.7)THEN
 
           hh =        var1             ! max. height (m)
           aa =        var2             ! valley width (m)
