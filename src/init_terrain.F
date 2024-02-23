@@ -48,7 +48,7 @@
       real, intent(inout), dimension(imp,cmp) :: south,newsouth,north,newnorth
 
       integer :: i,j,k,irec,ii,jj
-      real :: hh,aa,xval,xc,yc
+      real :: hh,aa,bb,xval,xc,yc
       real :: tem1,tem2,rr,angle
       real, dimension(:,:), allocatable :: zs_all
 
