@@ -65,7 +65,6 @@
 !  a valley with a flat bottom
 !  Similar to Sheridan (2019)
 !  Ivan Basic 19.02.2024.
-		print *,'  xh(i) = ',xh(i)
 
         IF(itern.eq.7)THEN
 
