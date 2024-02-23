@@ -74,15 +74,14 @@
           xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
           do j=jb,je
           do i=ib,ie
-            IF(abs(xh(i)-xc)>bb/2)THEN
+            IF(abs(xh(i)-xc)<bb/2)THEN
+              zs(i,j) = 0.0
+            ELSEIF(abs(xh(i)-xc)>aa/2)THEN
               IF(xh(i)<0)THEN
                 zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc+bb/2)/aa) )
-              ELSE
+              ELSEIF(xh(i)>0)THEN
                 zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc-bb/2)/aa) )
               ENDIF
-            	
-            ELSE 
-            	zs(i,j)= 0.0
             ENDIF
           enddo
           enddo
