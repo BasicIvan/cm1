@@ -3912,7 +3912,8 @@
           !               qa,ua,va,wa,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
           !               sigma,sigmaf,rds,rdsf,gz,gzu,gzv,gxu,gyv,rgz,uf,vf, &
           !               udiag,vdiag,wdiag)
-          if( startup )then
+          ! Ivan Basic 16.04.2024.: +".or.restarted"
+          if( startup.or.restarted )then
             call calc_tmea(ncalctm,mtime,dbldt,name_tmea,rf, &
                             mf,tmea,tke_sg,hpbl,th0,tha,prs,rho, &
                             qa,ua,va,wa,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
