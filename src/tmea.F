@@ -404,16 +404,6 @@
             enddo
             enddo
             
-          elseif (trim(name_tmea(n)).eq.'rho_TM') then
-            !$omp parallel do default(shared)  &
-            !$omp private(i,j,k)
-            do k=1,maxk
-            do j=1,nj
-            do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( rho(i,j,k) - tmea(i,j,k,n) )/dble(ncalctm)
-            enddo
-            enddo
-            enddo
 
           ! elseif (trim(name_tmea(n)).eq.'thten_TM') then
           !   !$omp parallel do default(shared)  &
