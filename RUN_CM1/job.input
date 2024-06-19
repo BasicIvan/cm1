@@ -1,0 +1,15 @@
+# directories
+MODEL=/work/bb1096/b381871/cm1/cm1r21.0/run/cm1.exe
+
+# MPI
+nodes=40
+tasks_per_node=128
+
+# OpenMP
+cpus_per_task=1
+
+# job paramaters
+jobname=U15NE
+time=08:00:00
+run_time=7200.0
+num_files=8
