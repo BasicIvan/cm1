@@ -12,3 +12,5 @@ The code can be run in its original form as well, just by setting the following 
 
 iptra = 0,
 dotmea = .false.
+
+For any additional quetsions, fire an email to: basic@iau.uni-frankfurt.de
