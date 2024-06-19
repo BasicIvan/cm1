@@ -1,4 +1,4 @@
-src/ contains the source codes for the CM1 v21.0
+* src/ contains the source codes for the CM1 v21.0
 The code is modified to accomodate online time-averaging, passive tracer, and more terrain choices.
 
 The main modifications are:
@@ -12,5 +12,8 @@ The code can be run in its original form as well, just by setting the following 
 
 iptra = 0,
 dotmea = .false.
+
+* RUN_CM1 contains the scripts to run the simulation and/or to submit a recursive run utilising restarts (used for longer simulations).
+README contains the instructions on how to use it.
 
 For any additional quetsions, fire an email to: basic@iau.uni-frankfurt.de
