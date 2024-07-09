@@ -68,6 +68,7 @@
       integer :: timeid,oneid,tfile,num_write
       integer :: xhid,yhid,zhid,xfid,yfid,zfid
       character(len=8) chid
+      character(len=30) :: time_units
 
 !-------------------------------------------------------------
 ! Declare and set integer values for the netCDF dimensions 
@@ -244,7 +245,12 @@
 
       call disp_err( nf90_def_var(ncid,"time",nf90_float,timeid,varid) , .true. )
       call disp_err( nf90_put_att(ncid,varid,"long_name","time since beginning of simulation") , .true. )
-      call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+      !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      !call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
       call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
       call disp_err( nf90_def_var(ncid,"xh",nf90_float,xhid,varid) , .true. )
@@ -614,6 +620,7 @@
     character(len=8) :: text1
     integer :: num_write,tfile
     logical :: allinfo
+    character(len=30) :: time_units
 
     chkx = nx
     chky = ny
@@ -725,7 +732,12 @@
 
       call disp_err( nf90_def_var(ncid,"time",nf90_float,timeid,varid) , .true. )
       call disp_err( nf90_put_att(ncid,varid,"long_name","time since beginning of simulation") , .true. )
-      call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+      !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      !call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
 
       call disp_err( nf90_def_var(ncid,"xh",nf90_float,niid,varid) , .true. )
       call disp_err( nf90_put_att(ncid,varid,"long_name","west-east location of scalar grid points") , .true. )
@@ -1517,6 +1529,7 @@
       integer :: i,n,ncid,status,dimid,varid,time_index,timeid,tfile
       integer :: xhid,yhid,zhid
       logical :: allinfo
+      character(len=30) :: time_units
 
       if( myid.eq.0 ) print *,'  Entering writestat_nc '
 
@@ -1591,7 +1604,12 @@
 
     call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
     call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-    call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+    !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      !call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
     call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
   !---------------------------------------------------------------------------!
@@ -1695,6 +1713,7 @@
       integer :: i,ncid,status,dimid,varid,time_index,n,n2,np,timeid,tfile,xid
       integer :: npid,yhid,zhid
       logical :: allinfo
+      character(len=30) :: time_units
 
 !-----------------------------------------------------------------------
 
@@ -1765,7 +1784,12 @@
 
     call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
     call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-    call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+    !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+	WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+    call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+    !call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
     call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
   !---------------------------------------------------------------------------!
@@ -1858,6 +1882,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
+      character(len=30) :: time_units
 
       if( wloop.eq.1 )then
         ! open file, define vars:
@@ -1892,7 +1917,12 @@
 
         call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
         call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-        call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+        !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      	call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      	!call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
         call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
         do n = 1,nvar
@@ -1973,6 +2003,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
+      character(len=30) :: time_units
 
       if( wloop.eq.1 )then
         ! open file:
@@ -2011,7 +2042,12 @@
 
         call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
         call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-        call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+        !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      	call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      	!call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
         call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
         do n = 1,nvar
@@ -2099,6 +2135,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
+      character(len=30) :: time_units
 
       if( wloop.eq.1 )then
         ! open file:
@@ -2139,7 +2176,12 @@
 
         call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
         call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-        call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+        !Ivan Basic 09.07.2024.
+      ! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      		"seconds since ", year, month, day, hour, minute, second
+      	call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      	!call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
         call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
         do n = 1,nvar
@@ -2229,6 +2271,7 @@
       real :: actual_time
       integer, dimension(1,1,1,1) :: ivar
       real,    dimension(1,1,1,1) :: rvar
+      character(len=30) :: time_units
 
         do i=1,maxstring
           string(i:i) = ' '
@@ -2298,7 +2341,12 @@
 
         call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
         call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-        call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+        !Ivan Basic 09.07.2024.
+      	! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      	call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      	!call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
         call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
         call disp_err( nf90_def_var(ncid,"icenter",nf90_int,(/xhid,yhid,zhid,timeid/),varid) , .true. )
@@ -2406,6 +2454,7 @@
       real :: actual_time
       integer, dimension(1,1,1,1) :: ivar
       real,    dimension(1,1,1,1) :: rvar
+      character(len=30) :: time_units
 
         do i=1,maxstring
           string(i:i) = ' '
@@ -2475,7 +2524,12 @@
 
         call disp_err( nf90_def_var(ncid,"time",nf90_float,(/timeid/),varid) , .true. )
         call disp_err( nf90_put_att(ncid,varid,"long_name","time") , .true. )
-        call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
+        !Ivan Basic 09.07.2024.
+      	! Construct the time units string
+		WRITE(time_units, '(A,I4.4,"-",I2.2,"-",I2.2," ",I2.2,":",I2.2,":",I2.2)') &
+      	"seconds since ", year, month, day, hour, minute, second
+      	call disp_err(nf90_put_att(ncid, varid, "units", TRIM(time_units)), .true.)
+      	!call disp_err( nf90_put_att(ncid,varid,"units","seconds") , .true. )
         call disp_err( nf90_put_att(ncid,varid,"axis","T") , .true. )
 
         call disp_err( nf90_def_var(ncid,"icenter",nf90_int,(/xhid,yhid,zhid,timeid/),varid) , .true. )
