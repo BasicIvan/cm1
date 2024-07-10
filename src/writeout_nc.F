@@ -68,7 +68,7 @@
       integer :: timeid,oneid,tfile,num_write
       integer :: xhid,yhid,zhid,xfid,yfid,zfid
       character(len=8) chid
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
 !-------------------------------------------------------------
 ! Declare and set integer values for the netCDF dimensions 
@@ -620,7 +620,7 @@
     character(len=8) :: text1
     integer :: num_write,tfile
     logical :: allinfo
-    character(len=30) :: time_units
+    character(len=50) :: time_units
 
     chkx = nx
     chky = ny
@@ -1529,7 +1529,7 @@
       integer :: i,n,ncid,status,dimid,varid,time_index,timeid,tfile
       integer :: xhid,yhid,zhid
       logical :: allinfo
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
       if( myid.eq.0 ) print *,'  Entering writestat_nc '
 
@@ -1713,7 +1713,7 @@
       integer :: i,ncid,status,dimid,varid,time_index,n,n2,np,timeid,tfile,xid
       integer :: npid,yhid,zhid
       logical :: allinfo
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
 !-----------------------------------------------------------------------
 
@@ -1882,7 +1882,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
       if( wloop.eq.1 )then
         ! open file, define vars:
@@ -2003,7 +2003,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
       if( wloop.eq.1 )then
         ! open file:
@@ -2135,7 +2135,7 @@
 
       integer :: i,j,k,n,xhid,yhid,zhid,zfid,timeid,status,dimid,varid,time_index
       real :: actual_time
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
       if( wloop.eq.1 )then
         ! open file:
@@ -2271,7 +2271,7 @@
       real :: actual_time
       integer, dimension(1,1,1,1) :: ivar
       real,    dimension(1,1,1,1) :: rvar
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
         do i=1,maxstring
           string(i:i) = ' '
@@ -2454,7 +2454,7 @@
       real :: actual_time
       integer, dimension(1,1,1,1) :: ivar
       real,    dimension(1,1,1,1) :: rvar
-      character(len=30) :: time_units
+      character(len=50) :: time_units
 
         do i=1,maxstring
           string(i:i) = ' '
