@@ -1,20 +1,37 @@
-# getDate.py
-
-import configparser
-import sys
+# get_date.py
 
 def read_namelist(file_path):
-    config = configparser.ConfigParser()
-    config.read(file_path)
-
-    # Extract values from namelist.input
-    year = config.getint('model_switches', 'year')
-    month = config.getint('model_switches', 'month')
-    day = config.getint('model_switches', 'day')
-    hour = config.getint('model_switches', 'hour')
-    minute = config.getint('model_switches', 'minute')
-    second = config.getint('model_switches', 'second')
-
+    # Initialize variables
+    year = None
+    month = None
+    day = None
+    hour = None
+    minute = None
+    second = None
+    
+    # Open the file and read line by line
+    with open(file_path, 'r') as f:
+        for line in f:
+            # Strip whitespace and split on '='
+            key_value = line.strip().split('=')
+            if len(key_value) == 2:
+                key = key_value[0].strip()
+                value = key_value[1].strip().rstrip(',')  # Remove comma if present
+                
+                # Assign values based on key
+                if key == 'year':
+                    year = int(value)
+                elif key == 'month':
+                    month = int(value)
+                elif key == 'day':
+                    day = int(value)
+                elif key == 'hour':
+                    hour = int(value)
+                elif key == 'minute':
+                    minute = int(value)
+                elif key == 'second':
+                    second = int(value)
+    
     return year, month, day, hour, minute, second
 
 if __name__ == "__main__":
@@ -22,4 +39,7 @@ if __name__ == "__main__":
     year, month, day, hour, minute, second = read_namelist(file_path)
 
     # Print values to standard output (stdout)
-    print(year, month, day, hour, minute, second)
+    if all(val is not None for val in [year, month, day, hour, minute, second]):
+        print(year, month, day, hour, minute, second)
+    else:
+        print("Error: Missing or incomplete datetime information in namelist.input")
