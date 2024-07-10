@@ -144,6 +144,13 @@ else
     mv runlog* error*  log/
     mkdir rst
     mv cm1rst* rst/
+
+    datetime_args=$(python3 get_date.py)
+    # Extract datetime arguments into individual variables
+    read year month day hour minute second <<< "$datetime_args"
+    datetime="${year}-${month}-${day} ${hour}:${minute}:${second}"
+    module load cdo
+    ncatted -a units,time,m,c,"seconds since ${datetime}" cm1out.nc
 fi
 
 runscript
