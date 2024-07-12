@@ -3,7 +3,7 @@
   implicit none
 
   private
-  public :: construct_time_units,netcdf_prelim
+  public :: netcdf_prelim
 #ifdef NETCDF
   public :: restart_prelim,writestat_nc,writepdata_nc,writehifrq_nc,writediag_nc,writeazim_nc,writecenter_nc,writemove_nc,disp_err
 #endif
