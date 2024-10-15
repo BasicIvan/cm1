@@ -1,2 +1,3 @@
 RUN_CM1/job.input
-RUN_CM1/INPUT/*.nc
+RUN_CM1/INPUT/myzs_*.nc
+RUN_CM1/INPUT/myflux_*.nc
