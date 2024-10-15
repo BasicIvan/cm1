@@ -8,7 +8,7 @@ echo "*******************"
 # Determine parameters and directories
 # ----------------------------------------------------------------------
 source job.input
-INPUTDIR=/home/b/b381871/RUN_CM1/INPUT
+INPUTDIR=/home/b/b381871/cm1/RUN_CM1/INPUT
 echo "jobname:          $jobname"
 echo "nodes:		$nodes"
 echo "tasks-per-node:   $tasks_per_node"
@@ -41,7 +41,7 @@ echo 0 > COUNTER
 # change to work directory
 cd $RUNDIR
 # copy files and link executable
-files="COUNTER prep_namelist.py namelist.input LANDUSE.TBL input_sounding RRTMG_LW_DATA RRTMG_SW_DATA input_grid_z"
+files="COUNTER prep_namelist.py namelist.input LANDUSE.TBL input_sounding RRTMG_LW_DATA RRTMG_SW_DATA input_grid_z myzs.nc myflux.nc"
 ln -s $MODEL cm1.exe
 for file in $files; do
     echo "copy: $file"
@@ -144,13 +144,6 @@ else
     mv runlog* error*  log/
     mkdir rst
     mv cm1rst* rst/
-
-    datetime_args=$(python3 get_date.py)
-    # Extract datetime arguments into individual variables
-    read year month day hour minute second <<< "$datetime_args"
-    datetime="${year}-${month}-${day} ${hour}:${minute}:${second}"
-    module load cdo
-    ncatted -a units,time,m,c,"seconds since ${datetime}" cm1out.nc
 fi
 
 runscript

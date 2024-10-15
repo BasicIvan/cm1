@@ -1,10 +1,21 @@
-job.input - specify job details. these settings refer to specific job in the series, so the total time of the simulation is run_time*num_files
-INPUT - the input files required for CM1 simulation are contained here. input_sounding_* are not used, but are here for convenience. Copy the one you want to input_sounding.
-cm1run - master script.
+----------------------
+ - job.input -
+Specify job details. 
+These settings refer to specific job in the series, so the total time of the simulation is run_time*num_files
+----------------------
+
+ - INPUT - 
+The input files required for CM1 simulation are contained here. 
+input_sounding_* are not used, but are here for convenience, so copy the one you want to input_sounding.
+----------------------
+
+- cm1run  (master script)
+
 	1. loads parameters from job.input and determines directories specified by job name in job.input.
-	2. copies the necessary files from INPUT and prepares  namelist.inputXX files for restarts (modifies irst,rstnum,run_time,rstfrq)
-	3. creates a recursive run script cm1.exe.run
-	4. runs cm1.exe.run that iterates through namelist.inputXX files
+	2. copies the necessary files from INPUT 
+	3. prepares namelist.inputXX files for restarts (modifies irst,rstnum,run_time,rstfrq)
+	4. creates a recursive run script cm1.exe.run
+	5. runs cm1.exe.run that iterates through namelist.inputXX files
 
 HOW TO USE:
 1. edit  JOB.INPUT,

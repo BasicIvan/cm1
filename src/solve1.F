@@ -230,10 +230,120 @@
 #ifdef MPI
       integer :: reqp1,reqp2
 #endif
+      !real, dimension(ib:ie,jb:je,npt) :: ptflux1, ptflux2 !Ivan Basic 12.09.2022.
+      !ptflux1 = 1.1e-7 !CO2
+      !ptflux2 = 7.1e-11 !CH4
+      
+! Ivan Basic 14.10.2024.: the code below is
+! an implementation of time- and spatially varying surface tracer flux.
+! It reads from a file myflux.nc, that needs to be created beforehand
+! NetCDF file: /home/b/b381871/python.git/<some name of the file>.nc
+! *************** 		begin myflux		 ********************
+      real, dimension(ib:ie,jb:je,npt) :: ptflux
+      integer: index1, index2, ntimes
+      real :: weight, fluxtau ! fluxtau is the time step in myflux.nc, in seconds.
+      real, dimension(:,:,:,:), allocatable :: myflux
+      !real, dimension(ntimes, nx, ny, npt) :: myflux
+      
+      ! To determine the time index based on mtime, we will interpolate between two time
+      ! steps, using linear interpolation
+      fluxtau = 3600.0d0
+      index1 = int(mtime*0.99 / fluxtau) + 1 ! *0.99 is here to avoid the last index
+      index2 = index1 + 1
+      weight = (mtime - (index1-1) * fluxtau) / fluxtau
 
-      real, dimension(ib:ie,jb:je,npt) :: ptflux1, ptflux2 !Ivan Basic 12.09.2022.
-      ptflux1 = 1.1e-7 !CO2
-      ptflux2 = 7.1e-11 !CH4
+      real, dimension(ib:ie,jb:je,npt) :: ptflux
+      integer :: index1, index2, ntimes, status, ncid, dimid, varid, mynx, myny, mynt, ierr
+      real :: weight, fluxtau ! fluxtau is the time step in myflux.nc, in seconds.
+      real, dimension(:,:,:,:), allocatable :: myflux
+      logical :: file_exists
+      !real, dimension(ntimes, nx, ny, npt) :: myflux
+      
+      ! To determine the time index based on mtime, we will interpolate between two time
+      ! steps, using linear interpolation
+      fluxtau = 3600.0d0
+      index1 = int(mtime * 0.99 / fluxtau) + 1 ! *0.99 is here to avoid the last index
+      index2 = index1 + 1
+      weight = (mtime - (index1-1) * fluxtau) / fluxtau
+
+      ! Check if the file myflux.nc exists
+      inquire(file='myflux.nc', exist=file_exists)
+
+      if (file_exists) then
+        ! Only processor 0 reads file:
+        IF(myid.eq.0) THEN
+          print *, 'reading passive tracer flux data from myflux.nc...'
+          status = nf90_open('myflux.nc', mode=nf90_nowrite , ncid=ncid)
+          status = nf90_inq_dimid(ncid, 'nx', dimid)
+          status = nf90_inquire_dimension(ncid, dimid, len=mynx)
+          status = nf90_inq_dimid(ncid, 'ny', dimid)
+          status = nf90_inquire_dimension(ncid, dimid, len=myny)
+          
+          ! Ivan Basic 15.10.2024.: check time dimension as well to allocate accordingly
+          status = nf90_inq_dimid(ncid, 'time', dimid)
+          status = nf90_inquire_dimension(ncid, dimid, len=mynt)
+
+          print *, 'mynx, nx: ', mynx, nx
+          print *, 'myny, ny: ', myny, ny
+          print *, 'mynt: ', mynt
+          
+          ! Allocate myflux array to store ptflux data for the entire domain
+          allocate(myflux(mynt, ny, nx, npt))
+
+          ! Check for dimension mismatches
+          if (mynx.ne.nx .or. myny.ne.ny) then
+            print *, 'status: ', status
+            print *, 'mynx does not equal nx or myny does not equal ny; stopping'
+            call stopcm1
+          endif
+
+          ! Retrieve variable ID and read the flux data
+          status = nf90_inq_varid(ncid, 'flux', varid)
+          if (status /= nf90_noerr) then
+            print *, 'error nf90_inq_varid'
+            print *, 'status: ', status
+          endif
+
+          status = nf90_get_var(ncid, varid, myflux)
+          if (status /= nf90_noerr) then
+            print *, 'error nf90_get_var'
+            print *, 'status: ', status
+          endif
+          
+          ! Close the NetCDF file
+          status = nf90_close(ncid)
+          print *, 'finished reading'
+          print *, 'min, max:', minval(myflux), maxval(myflux)
+
+#ifdef MPI
+          ! Communicate data to all processors:
+          call MPI_BCAST(myflux, mynt*nx*ny*npt, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
+#endif
+
+          ! Interpolate flux data for the current time step
+          do n = 1, npt
+          do j = 1, nj
+          do i = 1, ni
+            ! Check if this processor has this gridpoint
+            if (i.ge.ib .and. i.le.ie .and. j.ge.jb .and. j.le.je) then
+            	! Store a value for ptflux with linear interpolation
+                ptflux(i, j, n) = (1.0 - weight) * myflux(index1, i, j, n) + weight * myflux(index2, i, j, n)
+            endif
+          enddo
+          enddo
+          enddo
+          ! Deallocate myflux as it is no longer needed
+          deallocate(myflux)
+        ENDIF
+
+    else
+    	! If the file doesn't exist, set ptflux to constant values only if npt >= 1
+    	if (npt .ge. 1) then
+        	print *, 'File myflux.nc does not exist, setting ptflux to constant values.'
+        	ptflux = 1.1e-7 ! Set constant values for CO2
+    	endif
+	endif
+! *************** 		end myflux		 ********************
 !--------------------------------------------------------------------
 
 #ifdef MPI

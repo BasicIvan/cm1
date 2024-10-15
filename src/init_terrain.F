@@ -20,6 +20,12 @@
       use bc_module
       use adv_routines , only : zsgrad
       use comm_module
+
+!!! DJK
+#ifdef NETCDF
+      use netcdf
+#endif
+
 #ifdef MPI
       use mpi
 #endif
@@ -48,9 +54,12 @@
       real, intent(inout), dimension(imp,cmp) :: south,newsouth,north,newnorth
 
       integer :: i,j,k,irec,ii,jj
-      real :: hh,aa,bb,xval,xc,yc
+      real :: hh,aa,xval,xc,yc
       real :: tem1,tem2,rr,angle
       real, dimension(:,:), allocatable :: zs_all
+
+      ! DJK
+      integer :: status, ncid, varid, dimid, mynx, myny
 
 #ifdef MPI
       character(len=50) :: fname
@@ -61,75 +70,10 @@
 !-----------------------------------------------------------------------
 
 !----------------------------------------------------------
-!  itern = 7
-!  a valley with a flat bottom
-!  Similar to Sheridan (2019)
-!  Ivan Basic 19.02.2024.
-
-        IF(itern.eq.7)THEN
-
-          hh =        var1             ! max. height (m)
-          aa =        var2             ! valley width (m)
-          bb =		  var3			   ! basin width (m)
-          xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
-          do j=jb,je
-          do i=ib,ie
-            IF(abs(xh(i))<bb/2)THEN
-              zs(i,j) = 0.0
-            ELSE
-              IF(xh(i)<0)THEN
-                zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc+bb/2)/aa) )
-              ELSEIF(xh(i)>0)THEN
-                zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc-bb/2)/aa) )
-              ENDIF
-            ENDIF
-          enddo
-          enddo
-          
-!----------------------------------------------------------
-!  itern = 6
-!  valley within a plateau
-!  Similar to Sheridan (2019)
-!  Ivan Basic 19.02.2024.
-
-        ELSEIF(itern.eq.6)THEN
-
-          hh =        var1             ! max. height (m)
-          aa =        var2             ! valley width (m)
-          xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
-          do j=jb,je
-          do i=ib,ie
-            IF(abs(xh(i)-xc)<aa/2)THEN
-            	zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc)/aa) )
-            ELSE 
-            	zs(i,j)= hh
-            ENDIF
-          enddo
-          enddo
-!----------------------------------------------------------
-!  itern = 5
-!  valley between two cosine mountains ! Jan Weinkaemmerer, 02.10.19
-
-        ELSEIF(itern.eq.5)THEN
-
-          hh =        var1             ! max. height (m)
-          aa =        var2             ! valley width (m)
-          xc =        0                ! x-location (m) !Ivan Basic: xc is zero because it starts from the ridge
-          do j=jb,je
-          do i=ib,ie
-            !IF(abs(xh(i)-xc)<aa)THEN
-            zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc)/aa) )
-            !ELSE 
-            !  zs(i,j)=0.0
-            !ENDIF
-          enddo
-          enddo
-
-!----------------------------------------------------------
 !  itern = 1
 !  bell-shaped  (eg, Durran and Klemp, 1983, MWR, pg 2341)
 
-        ELSEIF(itern.eq.1)THEN
+        IF(itern.eq.1)THEN
 
           hh =      400.0              ! max. height (m)
           aa =     1000.0              ! half width (m)
@@ -172,11 +116,31 @@
           enddo
           enddo
 
+!---------------
+!  itern = 5
+!  valley between two cosine mountains ! Jan Weinkaemmerer, 02.10.19
+
+        ELSEIF(itern.eq.5)THEN
+
+          hh =        var1             ! max. height (m)
+          aa =        var2             ! valley width (m)
+          xc =        0.0              ! x-location (m)
+
+          do j=jb,je
+          do i=ib,ie
+            !IF(abs(xh(i)-xc)<aa)THEN
+            zs(i,j)=0.5*hh*( 1.0-cos(2.0*pi*(xh(i)-xc)/aa) )
+            !ELSE
+            !  zs(i,j)=0.0
+            !ENDIF
+          enddo
+          enddo
+
 !----------------------------------------------------------
-!  itern = 4
+!  itern = 11
 !  read from GrADS file "perts.dat"
 
-        ELSEIF(itern.eq.4)THEN
+        ELSEIF(itern.eq.11)THEN
 
           ! 170313:  zs_all array stores terrain for the entire domain
           allocate( zs_all(nx,ny) )
@@ -214,6 +178,69 @@
           ! zs_all no longer needed ... deallocate:
           deallocate( zs_all )
 
+!----------------------------------------------------------
+!  itern = 12
+!  read from netcdf file "myzs.nc"
+
+          ELSEIF(itern.eq.12)THEN
+
+          ! 170313:  zs_all array stores terrain for the entire domain
+          allocate( zs_all(ny,nx) )
+
+          ! only processor 0 reads file:
+
+          IF( myid.eq.0 )THEN
+              print *, 'reading terrain from myzs.nc...'
+            status=nf90_open('myzs.nc', mode=nf90_nowrite , ncid=ncid)
+            status=nf90_inq_dimid(ncid,'nx', dimid)
+            status=nf90_inquire_dimension(ncid,dimid,len=mynx)
+            status=nf90_inq_dimid(ncid,'ny', dimid)
+            status=nf90_inquire_dimension(ncid,dimid,len=myny)
+
+            print *, 'mynx, nx: ', mynx, nx
+            print *, 'myny, ny: ', myny, ny
+
+            if (mynx.ne.nx .or. myny.ne.ny) then
+              print *, 'status: ', status
+              print *, 'mynx does not equal nx or myny does not equal ny; stopping'
+              call stopcm1
+            end if
+
+            status = nf90_inq_varid(ncid,"myzs",varid)
+            if (status /= nf90_noerr) then
+                    print *, 'error nf90_inq_varid'
+                    print *, 'status: ', status
+            endif
+            status = nf90_get_var(ncid,varid,zs_all)
+            if (status /= nf90_noerr) then
+                    print *, 'error nf90_get_var'
+                    print *, 'status: ', status
+            endif
+            status = nf90_close(ncid)
+              print *, 'finished reading'
+              print *, 'min, max:', minval(zs_all), maxval(zs_all)
+
+          ENDIF
+
+#ifdef MPI
+          ! communicate data to all processors:
+          call MPI_BCAST(zs_all,nx*ny,MPI_REAL,0,MPI_COMM_WORLD,ierr)
+#endif
+
+          ! 170313:
+          do jj=1,ny
+          do ii=1,nx
+            i = ii - myi1 + 1
+            j = jj - myj1 + 1
+            ! check to see if this processor has this gridpoint:
+            IF( i.ge.ib .and. i.le.ie .and. j.ge.jb .and. j.le.je )THEN
+              zs(i,j) = zs_all(jj,ii)
+            ENDIF
+          enddo
+          enddo
+
+          ! zs_all no longer needed ... deallocate:
+          deallocate( zs_all )
 !----------------------------------------------------------
 
         ENDIF
