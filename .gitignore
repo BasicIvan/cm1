@@ -1,1 +1,2 @@
 RUN_CM1/job.input
+RUN_CM1/INPUT/*.nc
