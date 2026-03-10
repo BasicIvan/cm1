@@ -1,3 +1,7 @@
+RUN_CM1: high-level batch job control. Allows you to specify restarts and slurm job specifications to run automatically
+Ivan Basic (basic@iau.uni-frankfurt.de)
+Goethe Uni
+IAU
 ----------------------
  - job.input -
 Specify job details. 

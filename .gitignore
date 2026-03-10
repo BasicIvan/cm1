@@ -1,3 +1,17 @@
-RUN_CM1/job.input
-RUN_CM1/INPUT/myzs_*.nc
-RUN_CM1/INPUT/myflux_*.nc
+RUN_CM1/INPUT/*.nc
+RUN_CM1/INPUT/1*
+RUN_CM1/INPUT/2*
+RUN_CM1/INPUT/3*
+RUN_CM1/INPUT/4*
+RUN_CM1/INPUT/5*
+RUN_CM1/INPUT/6*
+RUN_CM1/INPUT/7*
+src/libs/*
+# editor / OS junk
+*.swp
+*.swo
+.DS_Store
+
+# optional: vim temp files
+.*.swp
+.*.swo

@@ -12,6 +12,15 @@
       use input
       use constants
       use module_sf_oml
+      
+#ifdef NETCDF
+        USE netcdf
+#endif
+
+#ifdef MPI
+      use mpi
+#endif
+
 
       implicit none
 
@@ -31,8 +40,13 @@
       real, intent(inout), dimension(ibl:iel,jbl:jel) :: tmn,tml,t0ml,hml,h0ml,huml,hvml,tmoml
       real, intent(inout), dimension(ibmyj:iemyj,jbmyj:jemyj) :: z0base
 
-      integer :: i,j,k,l
+      integer :: i,j,k,l,ii,jj
       real :: x1,x2,xcoast
+      
+      !Ivan Basic (for mylanduse.nc) 29.11.2024.
+      integer, dimension(:,:), allocatable :: mylanduse
+      integer :: status, ncid, varid, dimid, mynx, myny
+      
 
 !-----------------------------------------------------------------------
 !  BEGIN user settings
@@ -125,20 +139,88 @@
         enddo
 
 !----------
-!  if initsfc is not 1,2:
 
-      ELSEIF( initsfc.ne.1 .and. initsfc.ne.2 )THEN
+      ELSEIF( initsfc.eq.5 )THEN
+    
+      	! Ivan Basic 29.11.2024.
+! -------------------------- loading mylanduse.nc --------------------------  
+          allocate( mylanduse(ny,nx) ) ! fortran reads back to front
+#ifdef MPI
+        CALL MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
+#endif
+          ! only processor 0 reads file:
 
+          IF( myid.eq.0 )THEN
+              print *, 'reading terrain from mylanduse.nc...'
+            status=nf90_open('mylanduse.nc', mode=nf90_nowrite , ncid=ncid)
+            status=nf90_inq_dimid(ncid,'x', dimid)
+            status=nf90_inquire_dimension(ncid,dimid,len=mynx)
+            status=nf90_inq_dimid(ncid,'y', dimid)
+            status=nf90_inquire_dimension(ncid,dimid,len=myny)
+
+            print *, 'mynx, nx: ', mynx, nx
+            print *, 'myny, ny: ', myny, ny
+
+            if (mynx.ne.nx .or. myny.ne.ny) then
+              print *, 'status: ', status
+              print *, 'mynx does not equal nx or myny does not equal ny; stopping'
+              call stopcm1
+            end if
+
+            status = nf90_inq_varid(ncid,'landuse',varid)
+            if (status /= nf90_noerr) then
+                    print *, 'error nf90_inq_varid'
+                    print *, 'status: ', status
+            endif
+            status = nf90_get_var(ncid,varid,mylanduse)
+            if (status /= nf90_noerr) then
+                    print *, 'error nf90_get_var'
+                    print *, 'status: ', status
+            endif
+            status = nf90_close(ncid)
+              print *, 'finished reading'
+    		
+          ENDIF
+
+#ifdef MPI
+          ! communicate data to all processors:
+          call MPI_BCAST(mylanduse,ny*nx,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+#endif
+! --------------------- done loading mylanduse.nc --------------------------
+		
         ! build your own initial conditions here:
+		do j=jb,je
+      	do i=ib,ie
+        	tsk(i,j) = tsk0
+      	enddo
+      	enddo
 
-!!!        do j=jb,je
-!!!        do i=ib,ie
-!!!          tsk(i,j)      = ?
-!!!          tmn(i,j)      = ?
-!!!          xland(i,j)    = ?
-!!!          lu_index(i,j) = ?
-!!!        enddo
-!!!        enddo
+      	do j=jbl,jel
+      	do i=ibl,iel
+        	tmn(i,j)      = tmn0
+        	xland(i,j)    = xland0
+      	enddo
+      	enddo
+      	
+        ! landuse indices from mylanduse.nc Ivan Basic 06.12.2024.
+        do jj = 1, ny
+        do ii = 1, nx
+        	i = ii - myi1 +1
+        	j = ny - jj +1 -myj1 + 1 ! reverse jj along ny
+        	IF (i >= ib .AND. i <= ie .AND. j >= jb .AND. j <= je) THEN
+        	
+            		lu_index(i,j) = mylanduse(ii,jj)
+            		
+            		if (mylanduse(ii,jj) .eq. 16)then
+            			xland(i,j) = 2.0
+            			tsk(i,j) = tsk0-5.0
+            		endif
+        	ENDIF
+        enddo
+        enddo
+        
+      	
+      	deallocate(mylanduse) 
 
 !----------
 
@@ -193,7 +275,8 @@
 
         do j=jb,je
         do i=ib,ie
-          dsxy(i,j) = sqrt( (dx*ruh(i))**2 + (dy*rvh(j))**2 )
+!!!          dsxy(i,j) = sqrt( (dx*ruh(i))**2 + (dy*rvh(j))**2 )
+          dsxy(i,j) = max( dx*ruh(i) , dy*rvh(j) )
         enddo
         enddo
 
@@ -221,6 +304,9 @@
         ! sfc flux/drag is handled by ysu/gfsedmf/mynn pbl subroutines:
         dosfcflx = .false.
       ENDIF
+
+      ! 230424: bug fix
+      IF( cm1setup.eq.4 .and. isfcflx.eq.1 ) dosfcflx = .true.
 
       if(dowr) write(outfile,*)
       if(dowr) write(outfile,*) '  Settings used in this simulation:'

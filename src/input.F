@@ -36,12 +36,12 @@
               restart_file_qv0,restart_file_u0,restart_file_v0,               &
               restart_file_zs,restart_file_zh,restart_file_zf,                &
               restart_file_diags,restart_use_theta,restart_reset_frqtim,      &
-              dolsw,doturbdiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & 
+              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & ! Ivan Basic 23.01.23.
               use_pbl,use_avg_sfc,dot2p,iusetke,do_adapt_move,                &
               bl_mynn_tkeadvect,idoles,idopbl,dotimeavg,interp_on_restart,    &
               do_recycle_w,do_recycle_s,do_recycle_e,do_recycle_n,            &
               do_lsnudge,do_lsnudge_u,do_lsnudge_v,do_lsnudge_th,do_lsnudge_qv, &
-              do_ib ! Ivan Basic 23.01.23.
+              do_ib 
 
 !-----------------------------------------------------------------------
 
@@ -60,8 +60,9 @@
               ibp3,iep3,jbp3,jep3,kbp3,kep3,np3a,np3o,                        &
               ibmynn,iemynn,jbmynn,jemynn,kbmynn,kemynn,                      &
               ibmyj ,iemyj ,jbmyj ,jemyj ,kbmyj ,kemyj ,                      &
-              ibpbl ,iepbl ,jbpbl ,jepbl ,kbpbl ,kepbl ,npbl,                 &
               ibta  ,ieta  ,jbta  ,jeta  ,kbta  ,keta  ,                      &
+              ibcu  ,iecu  ,jbcu  ,jecu  ,kbcu  ,kecu  ,                      &
+              ibtmp ,ietmp ,jbtmp ,jetmp ,kbtmp ,ketmp ,ntmp2d, ntmp1d,       &
               ibdt,iedt,jbdt,jedt,kbdt,kedt,ntdiag,                           &
               ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,                           &
               ibdv,iedv,jbdv,jedv,kbdv,kedv,nudiag,nvdiag,nwdiag,             &
@@ -91,7 +92,7 @@
               advwenos,advwenov,weno_order,                                   &
               idiff,mdiff,difforder,imoist,sgsmodel,horizturb,                &
               tconfig,bcturbs,doimpl,                                         &
-              irdamp,hrdamp,psolver,nsound,ptype,ihail,iautoc,                &
+              irdamp,hrdamp,psolver,nsound,ptype,ihail,iautoc,cuparam,        &
               icor,betaplane,lspgrad,eqtset,idiss,efall,rterm,                &
               wbc,ebc,sbc,nbc,bbc,tbc,irbc,roflux,nudgeobc,                   &
               isnd,iwnd,itern,iinit,                                          &
@@ -163,14 +164,15 @@
               bl_mynn_cloudmix,bl_mynn_mixqt,initflag,spp_pbl,bl_mynn_output, &
               nutk,nvtk,nwtk,                                                 &
               ntim,ntavr,utav,vtav,wtav,ttav,qtav,etav,uutav,vvtav,           &
-              nsfctavr,les_subdomain_shape,ib_init,							  &
-              qcd_hadv,qcd_vadv,qcd_hturb,qcd_vturb,qcd_hidiff,qcd_vidiff,    &
-              qcd_mp,qcd_pbl ! Ivan Basic 23.01.23.
+              nsfctavr,les_subdomain_shape,ib_init,	                      &
+              qcd_hadv,qcd_vadv,qcd_hturb,qcd_vturb,qcd_hidiff,qcd_vidiff,    & ! Ivan Basic 23.01.23. for tmea diagnostics
+              qcd_mp,qcd_pbl                                                    ! Ivan Basic 23.01.23. for tmea diagnostics
               
 !-----------------------------------------------------------------------
 
       real dx,dy,dz,dtl,timax,run_time,                                       &
            kdiff2,kdiff6,fcor,kdiv,alph,rdalpha,zd,xhd,alphobc,umove,vmove,   &
+           umovem1,umovem2,vmovem1,vmovem2,                                   &
            v_t,l_h,lhref1,lhref2,l_inf,ndcnst,nt_c,cnstce,cnstcd,             &
            dx_inner,dx_outer,nos_x_len,tot_x_len,                             &
            dy_inner,dy_outer,nos_y_len,tot_y_len,                             &
@@ -205,7 +207,7 @@
            lsnudge_tau,lsnudge_start,lsnudge_end,lsnudge_ramp_time,           &
            top_cd,side_cd,outunitconv,                                        &
            recycle_width_dx,recycle_depth_m,                                  &
-           recycle_cap_loc_m,recycle_inj_loc_m
+           recycle_cap_loc_m,recycle_inj_loc_m,bl_mynn_closure
 
 !-----------------------------------------------------------------------
 
@@ -230,6 +232,14 @@
       real(kind=qp) :: pi_qp
 
 !-----------------------------------------------------------------------
+
+      logical :: nssl_3moment = .false.
+      logical :: nssl_density_on = .true.
+
+      integer :: output_n_as_m3 = 0   ! convert number conc from #/kg to #/m3
+      integer :: output_uv_ground = 0  ! output u,v, as ground relative
+
+!-----------------------------------------------------------------------
 !  timestats:
 
       real clock_rate,time_sound,time_buoyan,time_turb,              &
@@ -244,7 +254,7 @@
            time_mps2,time_mps4,time_mpq2,time_mptk2,time_mpb,        &
            time_parcels,time_rad,time_pbl,time_swath,time_pdef,      &
            time_prsrho,time_restart,time_poiss,time_diag,            &
-           time_azimavg,time_hifrq,time_ercyl,time_tavg
+           time_azimavg,time_hifrq,time_ercyl,time_tavg,time_cuprm
       integer count_last
 
 !-----------------------------------------------------------------------
@@ -261,7 +271,7 @@
           advwenos,advwenov,weno_order,                                 &
           apmasscon,idiff,mdiff,difforder,imoist,                       &
           ipbl,sgsmodel,tconfig,bcturbs,horizturb,doimpl,               &
-          irdamp,hrdamp,psolver,ptype,ihail,iautoc,                     &
+          irdamp,hrdamp,psolver,ptype,ihail,iautoc,cuparam,             &
           icor,betaplane,lspgrad,eqtset,idiss,efall,rterm,              &
           wbc,ebc,sbc,nbc,bbc,tbc,irbc,roflux,nudgeobc,                 &
           isnd,iwnd,itern,iinit,                                        &
@@ -324,7 +334,7 @@
               prcl_km,prcl_kh,prcl_tke,prcl_dbz,prcl_b,prcl_vpg,prcl_vort,    &
               prcl_rho,prcl_qsat,prcl_sfc
       namelist /param14/                                                      &
-              doturbdiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
+              dodomaindiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
       namelist /param15/                                                      &
               doazimavg,azimavgfrq,rlen,do_adapt_move,adapt_move_frq
       namelist /param17/                                                      &

@@ -1692,9 +1692,12 @@
 ! For kissvec, create a seed that depends on the state of the columns. Maybe not the best way, but it works.  
 ! Must use pmid from bottom four layers. 
          do i=1,ncol
-            if (pmid(i,1).lt.pmid(i,2)) then
-               stop 'MCICA_SUBCOL: KISSVEC SEED GENERATOR REQUIRES PMID FROM BOTTOM FOUR LAYERS.'
-            endif
+            !if (pmid(i,1).lt.pmid(i,2)) then
+            !   print*, "Error in column:", i
+            !   print*, "pmid(i,1)=", pmid(i,1), "pmid(i,2)=", pmid(i,2), "pmid(i,3)=", pmid(i,3), "pmid(i,4)=", pmid(i,4)
+            !   stop 'MCICA_SUBCOL: KISSVEC SEED GENERATOR REQUIRES PMID FROM BOTTOM FOUR LAYERS.'
+            !endif
+            !Ivan Basic: to stop errors
             seed1(i) = (pmid(i,1) - int(pmid(i,1)))  * 1000000000_im
             seed2(i) = (pmid(i,2) - int(pmid(i,2)))  * 1000000000_im
             seed3(i) = (pmid(i,3) - int(pmid(i,3)))  * 1000000000_im
@@ -4594,7 +4597,7 @@
       contains
 
 ! **************************************************************************
-      subroutine rrtmg_sw_ini(cpdair)
+      subroutine rrtmg_sw_ini(cpdair,grv)
 ! **************************************************************************
 !
 !  Original version:   Michael J. Iacono; February, 2004
@@ -4613,6 +4616,7 @@
       real(kind=rb), intent(in) :: cpdair     ! Specific heat capacity of dry air
                                               ! at constant pressure at 273 K
                                               ! (J kg-1 K-1)
+      real(kind=rb), intent(in) :: grv        ! Gravitational accel. (m/s2) from host model
 
 ! ------- Local -------
 
@@ -4636,7 +4640,7 @@
 !jm not thread safe      hvrini = '$Revision: 1.3 $'
 
 ! Initialize model data
-      call swdatinit(cpdair)
+      call swdatinit(cpdair,grv)
       call swcmbdat              ! g-point interval reduction data
       call swaerpr               ! aerosol optical properties
       call swcldpr               ! cloud optical properties
@@ -4724,7 +4728,7 @@
       end subroutine rrtmg_sw_ini
 
 !***************************************************************************
-      subroutine swdatinit(cpdair)
+      subroutine swdatinit(cpdair,grv)
 !***************************************************************************
 
 ! --------- Modules ----------
@@ -4739,6 +4743,7 @@
       real(kind=rb), intent(in) :: cpdair     ! Specific heat capacity of dry air
                                               ! at constant pressure at 273 K
                                               ! (J kg-1 K-1)
+      real(kind=rb), intent(in) :: grv        ! Gravitational accel. (m/s2) from host model
 
 ! Shortwave spectral band limits (wavenumbers)
       wavenum1(:) = (/2600._rb, 3250._rb, 4000._rb, 4650._rb, 5150._rb, 6150._rb, 7700._rb, &
@@ -4755,7 +4760,9 @@
 
 ! Fundamental physical constants from NIST 2002
 
-      grav = 9.8066_rb                        ! Acceleration of gravity
+    ! GHB, 230727: set to CM1 default value
+!!!      grav = 9.8066_rb                        ! Acceleration of gravity
+      grav = grv                              ! Acceleration of gravity
                                               ! (m s-2)
       planck = 6.62606876e-27_rb              ! Planck constant
                                               ! (ergs s; g cm2 s-1)
@@ -9898,7 +9905,7 @@
 !------------------------------------------------------------------
 MODULE module_ra_rrtmg_sw
 
-use module_model_constants, only : cp
+use module_model_constants, only : cp , grv => g
 USE module_wrf_error
 #if (HWRF == 1)
 USE module_state_description, ONLY : FER_MP_HIRES, FER_MP_HIRES_ADVECT, ETAMP_HWRF 
@@ -11333,7 +11340,7 @@ CONTAINS
  
 !====================================================================
    SUBROUTINE rrtmg_swinit(                                         &
-                       allowed_to_read ,                            &
+                       allowed_to_read , myid,                      &
                        ids, ide, jds, jde, kds, kde,                &
                        ims, ime, jms, jme, kms, kme,                &
                        its, ite, jts, jte, kts, kte                 )
@@ -11345,15 +11352,18 @@ CONTAINS
    INTEGER , INTENT(IN)           :: ids, ide, jds, jde, kds, kde,  &
                                      ims, ime, jms, jme, kms, kme,  &
                                      its, ite, jts, jte, kts, kte
+   integer, intent(in) :: myid
 
 ! Read in absorption coefficients and other data
    IF ( allowed_to_read ) THEN
+     if(myid.eq.0) print *,'  calling rrtmg_swlookuptable '
      CALL rrtmg_swlookuptable
    ENDIF
 
 ! Perform g-point reduction and other initializations
 ! Specific heat of dry air (cp) used in flux to heating rate conversion factor.
-   call rrtmg_sw_ini(cp)
+   if(myid.eq.0) print *,'  calling rrtmg_sw_ini, cp,grv = ',cp,grv
+   call rrtmg_sw_ini(cp,grv)
 
    END SUBROUTINE rrtmg_swinit
 

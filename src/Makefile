@@ -21,6 +21,8 @@ LINKOPTS  = -lnetcdf -lnetcdff
 #-- Choose the appropriate architecture, and uncomment all lines 
 #-- in that section.  See "README.compile" for more information.
 #-----------------------------------------------------------------------------
+
+#-----------------------------------------------------------------------------
 #  single processor, Intel compiler 
 #      (eg, NCAR's yellowstone/caldera/cheyenne)
 #FC   = ifort
@@ -29,18 +31,21 @@ LINKOPTS  = -lnetcdf -lnetcdff
 #-----------------------------------------------------------------------------
 #  multiple processors, distributed memory (MPI), Intel compiler 
 #      (eg, NCAR's yellowstone/cheyenne)
-#FC   = mpif90
-#OPTS = -O3 -xHost -ip -assume byterecl -fp-model precise -ftz -no-fma
-#CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
-#DM   = -DMPI
+FC   = mpif90
+#for debugging, use these OPTS settings...
+#OPTS = -O0 -g -traceback -check bounds -fpe0
+# for production speed, use these OPTS settings...
+OPTS = -O3 -xHost -ip -assume byterecl -fp-model precise -ftz -no-fma
+CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
+DM   = -DMPI
 #-----------------------------------------------------------------------------
 #  multiple processors, shared memory (OpenMP), Intel compiler 
 #      (eg, NCAR's yellowstone/cheyenne)
 #FC   = mpif90
-#OPTS = -O3 -xHost -ip -assume byterecl -fp-model precise -ftz -no-fma -qopenmp
-OPTS = -O3 -march=core-avx2 -ip -assume byterecl -fp-model precise -ftz -no-fma -qopenmp
+#OPTS = -O2 -xHost -ip -assume byterecl -fp-model precise -ftz -no-fma -qopenmp
+#OPTS = -O0 -march=core-avx2 -ip -assume byterecl -fp-model precise -ftz -no-fma -qopenmp
 #CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
-OMP  = -DOPENMP
+#OMP  = -DOPENMP
 #-----------------------------------------------------------------------------
 #  single processor, Portland Group compiler
 #FC   = pgf90
@@ -48,10 +53,10 @@ OMP  = -DOPENMP
 #CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
 #-----------------------------------------------------------------------------
 #  multiple processors, distributed memory (MPI), Portland Group compiler
-FC   = mpif90
+#FC   = mpif90
 #OPTS = -Mfree -O2 -Ktrap=none -Mautoinline -Minline=reshape
-CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
-DM   = -DMPI
+#CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
+#DM   = -DMPI
 #-----------------------------------------------------------------------------
 #  multiple processors, shared memory (OpenMP), Portland Group compiler
 #FC   = pgf90
@@ -179,6 +184,7 @@ SRC   = constants.F \
 	domaindiag.F \
 	writeout.F \
 	tmea.F \
+	myflux.F \
 	restart_write.F \
 	restart_read.F \
 	writeout_nc.F \
@@ -187,9 +193,7 @@ SRC   = constants.F \
 	sorad3d.F \
 	radtrns3d.F \
 	getcape.F \
-	ysu.F \
 	sfclay.F \
-	sfclayrev.F \
 	slab.F \
 	oml.F \
 	module_gfs_machine.F \
@@ -202,9 +206,20 @@ SRC   = constants.F \
 	module_ra_rrtmg_lw.F \
 	module_ra_rrtmg_sw.F \
 	module_bl_mynn.F \
+	module_bl_mynn_common.F \
+	module_bl_mynn_wrapper.F \
 	module_sf_mynn.F \
 	module_bl_myjpbl.F \
-	module_sf_myjsfc.F
+	module_sf_myjsfc.F \
+	ccpp_kind_types.F \
+	bl_ysu.F \
+	mp_wsm6.F \
+	mp_wsm6_effectRad.F \
+	mp_radar.F \
+	module_libmassv.F \
+	sf_sfclayrev.F \
+	cu_ntiedtke.F \
+	mmm_physics_wrapper.F
 
 OBJS = $(addsuffix .o, $(basename $(SRC)))
 
@@ -240,17 +255,17 @@ anelp.o: constants.o input.o misclibs.o bc.o poiss.o
 azimavg.o: input.o constants.o cm1libs.o writeout_nc.o comm.o bc.o
 base.o: constants.o input.o bc.o comm.o goddard.o cm1libs.o getcape.o
 bc.o: constants.o input.o
-cm1.o: constants.o input.o param.o base.o init3d.o misclibs.o solve1.o solve2.o solve3.o pdcomp.o diff2.o turb.o statpack.o writeout.o restart_write.o restart_read.o radiation_driver.o radtrns3d.o domaindiag.o azimavg.o hifrq.o parcel.o init_physics.o init_surface.o mp_driver.o ib_module.o eddy_recycle.o lsnudge.o tmea.o
+cm1.o: constants.o input.o param.o base.o init3d.o misclibs.o solve1.o solve2.o solve3.o pdcomp.o diff2.o turb.o statpack.o writeout.o restart_write.o restart_read.o radiation_driver.o radtrns3d.o domaindiag.o azimavg.o hifrq.o parcel.o init_physics.o init_surface.o mp_driver.o ib_module.o eddy_recycle.o lsnudge.o tmea.o myflux.o
 cm1libs.o: input.o constants.o
 comm.o: input.o bc.o
 diff2.o: constants.o input.o
 domaindiag.o: constants.o input.o interp_routines.o cm1libs.o getcape.o sfcphys.o turb.o lsnudge.o writeout_nc.o testcase_simple_phys.o
 eddy_recycle.o: constants.o input.o
 goddard.o: constants.o input.o cm1libs.o
-hifrq.o: input.o constants.o cm1libs.o adv.o adv_routines.o bc.o ib_module.o writeout_nc.o comm.o
+hifrq.o: input.o constants.o cm1libs.o adv.o bc.o ib_module.o writeout_nc.o comm.o
 ib_module.o: input.o constants.o bc.o comm.o
 init3d.o:  constants.o input.o misclibs.o cm1libs.o bc.o comm.o module_mp_nssl_2mom.o poiss.o parcel.o ib_module.o turb.o
-init_physics.o: constants.o input.o sfclay.o sfclayrev.o slab.o radtrns3d.o irrad3d.o goddard.o module_ra_rrtmg_lw.o module_ra_rrtmg_sw.o module_sf_gfdl.o module_sf_mynn.o module_bl_mynn.o module_sf_myjsfc.o
+init_physics.o: constants.o input.o sfclay.o slab.o radtrns3d.o irrad3d.o goddard.o module_ra_rrtmg_lw.o module_ra_rrtmg_sw.o module_sf_gfdl.o module_sf_mynn.o module_sf_myjsfc.o sf_sfclayrev.o cu_ntiedtke.o
 init_surface.o: constants.o input.o oml.o 
 init_terrain.o: constants.o input.o bc.o comm.o adv_routines.o
 interp_routines.o: constants.o input.o
@@ -267,14 +282,16 @@ module_gfs_funcphys.o: module_gfs_machine.o module_gfs_physcons.o
 module_gfs_physcons.o: module_gfs_machine.o
 module_sf_gfdl.o: module_gfs_machine.o module_gfs_physcons.o module_gfs_funcphys.o module_sf_exchcoef.o
 module_bl_gfsedmf.o: module_gfs_funcphys.o module_gfs_machine.o module_gfs_physcons.o module_sf_gfdl.o
-module_bl_mynn.o: module_ra_etc.o
-module_sf_mynn.o: module_ra_etc.o module_bl_mynn.o
+module_bl_mynn.o: module_bl_mynn_common.o
+module_bl_mynn_common.o: module_ra_etc.o module_gfs_machine.o
+module_bl_mynn_wrapper.o: module_bl_mynn_common.o module_bl_mynn.o
+module_sf_mynn.o: module_ra_etc.o
 module_bl_myjpbl.o: module_ra_etc.o
 module_sf_myjsfc.o: module_ra_etc.o
 morrison.o: input.o constants.o
 module_mp_jensen_ishmael.o: input.o module_ra_etc.o
-mp_driver.o: constants.o input.o misclibs.o kessler.o goddard.o thompson.o lfoice.o morrison.o module_mp_nssl_2mom.o module_mp_p3.o module_mp_jensen_ishmael.o
-param.o: constants.o input.o init_terrain.o bc.o comm.o thompson.o morrison.o module_mp_nssl_2mom.o goddard.o lfoice.o module_mp_p3.o module_mp_jensen_ishmael.o ib_module.o eddy_recycle.o lsnudge.o
+mp_driver.o: constants.o input.o misclibs.o kessler.o goddard.o thompson.o lfoice.o morrison.o module_mp_nssl_2mom.o module_mp_p3.o module_mp_jensen_ishmael.o mmm_physics_wrapper.o mp_wsm6.o
+param.o: constants.o input.o init_terrain.o bc.o comm.o thompson.o morrison.o module_mp_nssl_2mom.o goddard.o lfoice.o module_mp_p3.o module_mp_jensen_ishmael.o ib_module.o eddy_recycle.o lsnudge.o mp_wsm6.o ccpp_kind_types.o
 parcel.o: constants.o input.o cm1libs.o bc.o comm.o writeout_nc.o
 pdef.o: input.o bc.o comm.o
 pdcomp.o: constants.o input.o adv.o poiss.o ib_module.o
@@ -284,7 +301,7 @@ radtrns3d.o: irrad3d.o sorad3d.o radlib3d.o
 restart_write.o: constants.o input.o writeout_nc.o lsnudge.o
 restart_read.o: constants.o input.o writeout_nc.o lsnudge.o goddard.o lfoice.o restart_write.o
 sfcphys.o: constants.o input.o cm1libs.o
-solve1.o: constants.o input.o bc.o diff2.o turbtend.o misclibs.o testcase_simple_phys.o eddy_recycle.o lsnudge.o
+solve1.o: constants.o input.o bc.o diff2.o turbtend.o misclibs.o testcase_simple_phys.o eddy_recycle.o lsnudge.o myflux.o
 solve2.o: constants.o input.o bc.o comm.o adv.o adv_routines.o sound.o sounde.o soundns.o soundcb.o anelp.o misclibs.o module_mp_nssl_2mom.o ib_module.o
 solve3.o: constants.o input.o bc.o comm.o adv_routines.o misclibs.o parcel.o lsnudge.o
 sorad3d.o: radlib3d.o
@@ -296,8 +313,17 @@ statpack.o: constants.o input.o maxmin.o misclibs.o cm1libs.o writeout_nc.o
 testcase_simple_phys.o: constants.o input.o
 thompson.o: input.o module_mp_radar.o module_ra_etc.o
 tmea.o: input.o constants.o getcape.o domaindiag.o
-turb.o: constants.o input.o bc.o comm.o sfcphys.o sfclay.o sfclayrev.o slab.o oml.o ysu.o cm1libs.o module_sf_gfdl.o module_bl_gfsedmf.o module_sf_mynn.o module_bl_mynn.o module_bl_myjpbl.o module_sf_myjsfc.o turbnba.o misclibs.o ib_module.o turbtend.o
-turbtend.o: constants.o input.o cm1libs.o misclibs.o
+turb.o: constants.o input.o bc.o comm.o sfcphys.o sfclay.o slab.o oml.o cm1libs.o module_sf_gfdl.o module_bl_gfsedmf.o module_sf_mynn.o module_bl_mynn_wrapper.o module_bl_myjpbl.o module_sf_myjsfc.o turbnba.o misclibs.o ib_module.o turbtend.o mmm_physics_wrapper.o
+turbtend.o: constants.o input.o cm1libs.o
 turbnba.o: constants.o input.o bc.o comm.o
 writeout.o: constants.o input.o bc.o comm.o writeout_nc.o misclibs.o getcape.o ib_module.o cm1libs.o sfcphys.o eddy_recycle.o
 writeout_nc.o: constants.o input.o
+
+bl_ysu.o: ccpp_kind_types.o
+mp_wsm6.o: ccpp_kind_types.o module_libmassv.o mp_radar.o
+mp_wsm6_effectRad.o: ccpp_kind_types.o mp_wsm6.o
+mp_radar.o: ccpp_kind_types.o
+sf_sfclayrev.o: ccpp_kind_types.o
+cu_ntiedtke.o: ccpp_kind_types.o
+mmm_physics_wrapper.o: ccpp_kind_types.o bl_ysu.o mp_wsm6.o mp_wsm6_effectRad.o sf_sfclayrev.o cu_ntiedtke.o
+

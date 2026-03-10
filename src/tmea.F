@@ -32,63 +32,12 @@
         character(len=60), dimension(maxvars), intent(inout) :: desc_tmea
 
         ntmea2d = 0
-
-        ntmea2d = ntmea2d + 1
-        name_tmea(ntmea2d) = 'hpbl_TM '
-        desc_tmea(ntmea2d) = 'TM PBL height'
-        unit_tmea(ntmea2d) = 'm'
-
-        if (imoist.eq.1) then
-          ntmea2d = ntmea2d + 1
-          name_tmea(ntmea2d) = 'cape_TM '
-          desc_tmea(ntmea2d) = 'TM convective available potential energy'
-          unit_tmea(ntmea2d) = 'J/kg'
-
-          ntmea2d = ntmea2d + 1
-          name_tmea(ntmea2d) = 'cin_TM  '
-          desc_tmea(ntmea2d) = 'TM convective inhibition'
-          unit_tmea(ntmea2d) = 'J/kg'
-
-          ntmea2d = ntmea2d + 1
-          name_tmea(ntmea2d) = 'lcl_TM  '
-          desc_tmea(ntmea2d) = 'TM lifted condensation level'
-          unit_tmea(ntmea2d) = 'm'
-
-          ntmea2d = ntmea2d + 1
-          name_tmea(ntmea2d) = 'lfc_TM  '
-          desc_tmea(ntmea2d) = 'TM level of free convection'
-          unit_tmea(ntmea2d) = 'm'
-        endif
-
         ntmea = 0
 
         ntmea = ntmea + 1
         name_tmea(ntmea+ntmea2d) = 'th_TM   '
         desc_tmea(ntmea+ntmea2d) = 'TM potential temperature plus background'
         unit_tmea(ntmea+ntmea2d) = 'K'
-
-        ntmea = ntmea + 1
-        name_tmea(ntmea+ntmea2d) = 'tha_TM  '
-        desc_tmea(ntmea+ntmea2d) = 'TM potential temperature'
-        unit_tmea(ntmea+ntmea2d) = 'K'
-
-        ntmea = ntmea + 1
-        name_tmea(ntmea+ntmea2d) = 'prs_TM  '
-        desc_tmea(ntmea+ntmea2d) = 'TM pressure'
-        unit_tmea(ntmea+ntmea2d) = 'Pa'
-        
-        ntmea = ntmea + 1
-        name_tmea(ntmea+ntmea2d) = 'rho_TM  '
-        desc_tmea(ntmea+ntmea2d) = 'TM dry-air density'
-        unit_tmea(ntmea+ntmea2d) = 'kg/m^3'
-
-
-        if (imoist.eq.1) then
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'qv_TM  '
-          desc_tmea(ntmea+ntmea2d) = 'TM water vapor mixing ratio'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
-        endif
 
         ntmea = ntmea + 1
         name_tmea(ntmea+ntmea2d) = 'u_TM    '
@@ -110,20 +59,6 @@
           name_tmea(ntmea+ntmea2d) = 'tke_sg  '
           desc_tmea(ntmea+ntmea2d) = 'TM subgrid turbulence kinetic energy interp'
           unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
-        endif
-        
-        if (iptra.eq.1) then
-
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'pt1_TM'
-          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged (CO2)'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 04.08.2023.
-          
-          ntmea = ntmea + 1
-          name_tmea(ntmea+ntmea2d) = 'pt2_TM'
-          desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged (CH4)'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 21.09.2023.
-          
         endif
 
         ntmea = ntmea + 1
@@ -162,7 +97,7 @@
         character(len=40), dimension(maxvars), intent(in) :: name_tmea
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: rf,lenscl
         real, dimension(ib:ie,jb:je,kb:ke+1), intent(in) :: mf
-        real, dimension(ib:ie,jb:je,kb:ke,ntmea), intent(inout) :: tmea
+        real, dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d), intent(inout):: tmea !Ivan Basic Feb 2026: added "+ntmea2d"
         real, dimension(ib:ie,jb:je,kb:ke+1,5), intent(in) :: tke_sg
         real, dimension(ibl:iel,jbl:jel), intent(in) :: hpbl
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: th0,tha,prs,rho,t13
@@ -256,7 +191,7 @@
           do k=1,nk
           do j=1,nj+1
           do i=1,ni
-            dthdy(i,j,k) = gzv(i,j)*(th(i,j,k)*rgz(i,j)-th(i,j-1,k)*rgz(i,j-1))*rdy*vf(i)  &
+            dthdy(i,j,k) = gzv(i,j)*(th(i,j,k)*rgz(i,j)-th(i,j-1,k)*rgz(i,j-1))*rdy*vf(j)  &
                     +0.5*( gyv(i,j,k+1)*(thw(i,j,k+1)+thw(i,j-1,k+1))                      &
                           -gyv(i,j,k  )*(thw(i,j,k  )+thw(i,j-1,k  )) )*rdsf(k)
           enddo
@@ -577,6 +512,28 @@
             do j=1,nj
             do i=1,ni
               tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,2)+pta(i,j,k+1,2)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023., 21.09.2023.
+            enddo
+            enddo
+            enddo
+          
+          elseif (trim(name_tmea(n)).eq.'pt3_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,3)+pta(i,j,k+1,3)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'pt4_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,4)+pta(i,j,k+1,4)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
             enddo
             enddo
             enddo
@@ -2290,4 +2247,6 @@
       end subroutine getavgy
 
       END MODULE tmea_module
+
+
 

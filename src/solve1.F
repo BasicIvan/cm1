@@ -5,11 +5,11 @@
 
 !-----------------------------------------------------------------------------
 !
-!  CM1 Numerical Model, Release 21.0  (cm1r21.0)
-!  20 April 2022
+!  CM1 Numerical Model, Release 21.1  (cm1r21.1)
+!  24 March 2024
 !  https://www2.mmm.ucar.edu/people/bryan/cm1/
 !
-!  (c)2022 - University Corporation for Atmospheric Research 
+!  (c)2024 - University Corporation for Atmospheric Research 
 !
 !-----------------------------------------------------------------------------
 !  Quick Index:
@@ -84,7 +84,7 @@
                    wprof,ufrc,vfrc,thfrc,qvfrc,ug,vg,dvdr,           &
                    uavg,vavg,thavg,pavg,ulspg,vlspg,qavg,cavg,       &
                    pi0,rho0,prs0,thv0,th0,rth0,qv0,qc0,              &
-                   qi0,rr0,rf0,rrf0,                                 &
+                   qi0,rr0,rf0,rrf0,thrd,                            &
                    zs,gz,rgz,gzu,rgzu,gzv,rgzv,dzdx,dzdy,gx,gxu,gy,gyv, &
                    znt,zntmp,ust,thflux,qvflux,cm0,                  &
                    radbcw,radbce,radbcs,radbcn,                      &
@@ -101,7 +101,8 @@
                    kmh,kmv,khh,khv,tkea,tke3d,tketen,                &
                    nm,defv,defh,lenscl,dissten,epst,epsd1,epsd2,     &
                    thpten,qvpten,qcpten,qipten,upten,vpten,qnipten,qncpten,o30,zir,  &
-                   swten,lwten,                                      &
+                   swten,lwten,thraten,                              &
+                   thcuten,qvcuten,qccuten,qicuten,ucuten,vcuten,    &
                    pta,pt3d,ptten,                                   &
                    gamk,gamwall,kmw,ufw,vfw,u1b,v1b,u2pt,v2pt,ufwk,vfwk, &
                    tdiag,qdiag,udiag,vdiag,wdiag,kdiag,pdiag,        &
@@ -122,6 +123,12 @@
       use simple_phys_module, only : testcase_simple_phys,get_avg_uvt,get_avg_uvtq
       use eddy_recycle
       use lsnudge_module
+      ! Ivan Basic 15.10.2024.: add this routine so the netcdf file loading works:
+      use myflux_module
+#ifdef NETCDF
+      use netcdf
+#endif
+
 #ifdef MPI
       use mpi
 #endif
@@ -156,6 +163,7 @@
       double precision, intent(inout), dimension(kb:ke,3+numq) :: cavg
       real, intent(in), dimension(ib:ie,jb:je,kb:ke) :: pi0,rho0,prs0,thv0,th0,rth0,qv0,qc0
       real, intent(in), dimension(ib:ie,jb:je,kb:ke) :: qi0,rr0,rf0,rrf0
+      real, intent(in), dimension(ibb2:ibe2,jbb2:jbe2,kbb2:kbe2) :: thrd
       real, intent(in), dimension(ib:ie,jb:je) :: zs
       real, intent(in), dimension(itb:ite,jtb:jte) :: gz,rgz,gzu,rgzu,gzv,rgzv,dzdx,dzdy
       real, intent(in), dimension(itb:ite,jtb:jte,ktb:kte) :: gx,gxu,gy,gyv
@@ -182,7 +190,8 @@
       real, intent(inout), dimension(ibb:ieb,jbb:jeb,kbb:keb) :: thpten,qvpten,qcpten,qipten,upten,vpten,qnipten,qncpten
       real, intent(inout), dimension(ibr:ier,jbr:jer,kbr:ker) :: o30
       real, intent(inout), dimension(ibr:ier,jbr:jer) :: zir
-      real, intent(inout), dimension(ibr:ier,jbr:jer,kbr:ker) :: swten,lwten
+      real, intent(inout), dimension(ibr:ier,jbr:jer,kbr:ker) :: swten,lwten,thraten
+      real, intent(in), dimension(ibcu:iecu,jbcu:jecu,kbcu:kecu) :: thcuten,qvcuten,qccuten,qicuten,ucuten,vcuten
       real, intent(inout), dimension(ibp:iep,jbp:jep,kbp:kep,npt) :: pta,pt3d,ptten
       real, intent(in), dimension(kb:ke) :: gamk,gamwall,kmw,ufw,vfw,u1b,v1b
       real, intent(inout), dimension(ib2pt:ie2pt,jb2pt:je2pt,kb2pt:ke2pt) :: u2pt,v2pt
@@ -210,7 +219,7 @@
 !-----------------------------------------------------------------------
 ! Arrays and variables defined inside solve
 
-      integer :: i,j,k,n,nrk,bflag,pdef,diffit,k1,k2,ii,ip
+      integer :: i,j,k,n,nrk,bflag,pdef,diffit,k1,k2,ii,jj,ip ! Ivan Basic: added 'jj'
       integer :: has_reqc,has_reqi,has_reqs,do_radar_ref,ke_diag
 
       real :: delqv,delpi,delth,delt,fac,epsd,dheat,dz1,xs
@@ -222,6 +231,7 @@
       real :: tn,qn,nudgefac,taunudge,timenudge
 
       real :: umod,uref,zref,oldval,newval
+
       double precision :: weps,afoo,bfoo,p0,p2
 
       logical :: get_time_avg,tqnudge,dopf
@@ -230,120 +240,40 @@
 #ifdef MPI
       integer :: reqp1,reqp2
 #endif
-      !real, dimension(ib:ie,jb:je,npt) :: ptflux1, ptflux2 !Ivan Basic 12.09.2022.
-      !ptflux1 = 1.1e-7 !CO2
-      !ptflux2 = 7.1e-11 !CH4
       
-! Ivan Basic 14.10.2024.: the code below is
-! an implementation of time- and spatially varying surface tracer flux.
-! It reads from a file myflux.nc, that needs to be created beforehand
-! NetCDF file: /home/b/b381871/python.git/<some name of the file>.nc
-! *************** 		begin myflux		 ********************
-      real, dimension(ib:ie,jb:je,npt) :: ptflux
-      integer: index1, index2, ntimes
+! Ivan Basic 28.10.2024:
+! *************** 		ptflux calculation		 ********************
+      real, dimension(ib:ie,jb:je,npt) :: ptflux ! dimensions: x,y,npt
+      integer :: index1, index2 ! time index
       real :: weight, fluxtau ! fluxtau is the time step in myflux.nc, in seconds.
-      real, dimension(:,:,:,:), allocatable :: myflux
-      !real, dimension(ntimes, nx, ny, npt) :: myflux
-      
-      ! To determine the time index based on mtime, we will interpolate between two time
-      ! steps, using linear interpolation
-      fluxtau = 3600.0d0
-      index1 = int(mtime*0.99 / fluxtau) + 1 ! *0.99 is here to avoid the last index
-      index2 = index1 + 1
-      weight = (mtime - (index1-1) * fluxtau) / fluxtau
-
-      real, dimension(ib:ie,jb:je,npt) :: ptflux
-      integer :: index1, index2, ntimes, status, ncid, dimid, varid, mynx, myny, mynt, ierr
-      real :: weight, fluxtau ! fluxtau is the time step in myflux.nc, in seconds.
-      real, dimension(:,:,:,:), allocatable :: myflux
-      logical :: file_exists
-      !real, dimension(ntimes, nx, ny, npt) :: myflux
-      
-      ! To determine the time index based on mtime, we will interpolate between two time
-      ! steps, using linear interpolation
+      ! myflux_loaded thing was added in Feb 2026. check myflux.F too. 
+      ! default value:
+        ptflux(:,:,:) = 1.0e-9
+      if (myflux_loaded) then
+      ! Determine the time index based on mtime by interpolating between two times
       fluxtau = 3600.0d0
       index1 = int(mtime * 0.99 / fluxtau) + 1 ! *0.99 is here to avoid the last index
+      index1 = max(1, min(index1, ptnt-1))
       index2 = index1 + 1
       weight = (mtime - (index1-1) * fluxtau) / fluxtau
-
-      ! Check if the file myflux.nc exists
-      inquire(file='myflux.nc', exist=file_exists)
-
-      if (file_exists) then
-        ! Only processor 0 reads file:
-        IF(myid.eq.0) THEN
-          print *, 'reading passive tracer flux data from myflux.nc...'
-          status = nf90_open('myflux.nc', mode=nf90_nowrite , ncid=ncid)
-          status = nf90_inq_dimid(ncid, 'nx', dimid)
-          status = nf90_inquire_dimension(ncid, dimid, len=mynx)
-          status = nf90_inq_dimid(ncid, 'ny', dimid)
-          status = nf90_inquire_dimension(ncid, dimid, len=myny)
+      weight = max(0.0, min(weight, 1.0))
+      do n=1,npt
+      	  do jj=1,ny
+          do ii=1,nx
+          	i = ii - myi1 + 1
+          	j = jj - myj1 + 1
+        	!j = ny - jj + 1 - myj1 + 1  ! no reversing here!
+        	!myflux: (npt,nt,ny,nx)
+        		! Check if this processor has this grid point:
+        		IF (i >= ib .AND. i <= ie .AND. j >= jb .AND. j <= je) THEN
+            		ptflux(i,j,n) = (1.0 - weight) * myflux(n,index1,ii,jj) + weight * myflux(n,index2,ii,jj)
+        		ENDIF
           
-          ! Ivan Basic 15.10.2024.: check time dimension as well to allocate accordingly
-          status = nf90_inq_dimid(ncid, 'time', dimid)
-          status = nf90_inquire_dimension(ncid, dimid, len=mynt)
-
-          print *, 'mynx, nx: ', mynx, nx
-          print *, 'myny, ny: ', myny, ny
-          print *, 'mynt: ', mynt
-          
-          ! Allocate myflux array to store ptflux data for the entire domain
-          allocate(myflux(mynt, ny, nx, npt))
-
-          ! Check for dimension mismatches
-          if (mynx.ne.nx .or. myny.ne.ny) then
-            print *, 'status: ', status
-            print *, 'mynx does not equal nx or myny does not equal ny; stopping'
-            call stopcm1
-          endif
-
-          ! Retrieve variable ID and read the flux data
-          status = nf90_inq_varid(ncid, 'flux', varid)
-          if (status /= nf90_noerr) then
-            print *, 'error nf90_inq_varid'
-            print *, 'status: ', status
-          endif
-
-          status = nf90_get_var(ncid, varid, myflux)
-          if (status /= nf90_noerr) then
-            print *, 'error nf90_get_var'
-            print *, 'status: ', status
-          endif
-          
-          ! Close the NetCDF file
-          status = nf90_close(ncid)
-          print *, 'finished reading'
-          print *, 'min, max:', minval(myflux), maxval(myflux)
-
-#ifdef MPI
-          ! Communicate data to all processors:
-          call MPI_BCAST(myflux, mynt*nx*ny*npt, MPI_REAL, 0, MPI_COMM_WORLD, ierr)
-#endif
-
-          ! Interpolate flux data for the current time step
-          do n = 1, npt
-          do j = 1, nj
-          do i = 1, ni
-            ! Check if this processor has this gridpoint
-            if (i.ge.ib .and. i.le.ie .and. j.ge.jb .and. j.le.je) then
-            	! Store a value for ptflux with linear interpolation
-                ptflux(i, j, n) = (1.0 - weight) * myflux(index1, i, j, n) + weight * myflux(index2, i, j, n)
-            endif
           enddo
           enddo
-          enddo
-          ! Deallocate myflux as it is no longer needed
-          deallocate(myflux)
-        ENDIF
-
-    else
-    	! If the file doesn't exist, set ptflux to constant values only if npt >= 1
-    	if (npt .ge. 1) then
-        	print *, 'File myflux.nc does not exist, setting ptflux to constant values.'
-        	ptflux = 1.1e-7 ! Set constant values for CO2
-    	endif
-	endif
-! *************** 		end myflux		 ********************
+      enddo
+      endif
+      ! **************	end ptflux calculation		 ********************
 !--------------------------------------------------------------------
 
 #ifdef MPI
@@ -365,23 +295,23 @@
 	  !Ivan Basic 06.02.23
       ! Do the budgets for online time averaging, too. Budgets have to be prepared in param.F.
       IF( dowriteout .or. dotdwrite .or. dotmcalc )THEN ! Ivan Basic 06.02.23
-        if( output_thbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
           dotbud = .true.
           if(myid.eq.0) print *,'  dotbud = ',dotbud
         endif
-        if( output_qvbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
           doqbud = .true.
           if(myid.eq.0) print *,'  doqbud = ',doqbud
         endif
-        if( output_ubudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
           doubud = .true.
           if(myid.eq.0) print *,'  doubud = ',doubud
         endif
-        if( output_vbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
           dovbud = .true.
           if(myid.eq.0) print *,'  dovbud = ',dovbud
         endif
-        if( output_wbudget.eq.1 .or. doturbdiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
           dowbud = .true.
           if(myid.eq.0) print *,'  dowbud = ',dowbud
         endif
@@ -454,22 +384,38 @@
 
       IF( idoles .and. iusetke )THEN
 
+        !  Buoyancy, Dissipation, and mean-gradient (ie, shear) terms:
+        !    cm1r21.1: switch back to shear-prod formulation from cm1r19 and earlier
+        IF(tconfig.eq.1)THEN
         !$omp parallel do default(shared)  &
         !$omp private(i,j,k)
-        DO k=2,nk
-          !  Buoyancy, Dissipation, and mean-gradient (ie, shear) terms:
+          do k=2,nk
           do j=1,nj
           do i=1,ni
             tketen(i,j,k) = -khv(i,j,k)*nm(i,j,k)  &
                             -dissten(i,j,k)  &
-                            +epst(i,j,k)
+                            +kmv(i,j,k)*max(0.0,(defv(i,j,k)+defh(i,j,k)))
           enddo
           enddo
-        ENDDO
+          enddo
+        ELSEIF(tconfig.eq.2)THEN
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=2,nk
+          do j=1,nj
+          do i=1,ni
+            tketen(i,j,k) = -khv(i,j,k)*nm(i,j,k)  &
+                            -dissten(i,j,k)  &
+                            +kmv(i,j,k)*max(0.0,defv(i,j,k))   &
+                            +kmh(i,j,k)*max(0.0,defh(i,j,k))
+          enddo
+          enddo
+          enddo
+        ENDIF
         if(timestats.ge.1) time_turb=time_turb+mytime()
 
-        !if( dotdwrite .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
-        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
+        !if( dotdwrite .and. kd_turb.ge.1 )then 
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1
@@ -491,8 +437,8 @@
                    dum1,dum2,dum3,dum4,dum5,sten,tkea,tketen,kmh,kmv)
       endif
 
-        !if( dotdwrite .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
-        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
+        !if( dotdwrite .and. kd_turb.ge.1 )then 
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1
@@ -1040,7 +986,7 @@
 
       !---- Dissipative heating term:
 
-      IF(idiss.eq.1)THEN
+      IF( idiss.eq.1 )THEN
         IF( dotbud .and. td_diss.ge.1 )THEN
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
@@ -1181,19 +1127,18 @@
         ! Radiation tendencies:
 
         ! Notes:
-        ! use sadv to store total potential temperature:
-        ! TEMPERATURE tendencies from radiation scheme
-        ! are stored in lwten and swten
+        ! TEMPERATURE tendencies from radiation scheme are stored in lwten and swten
+        ! since cm1r21.1: potential temp tendencies are stored in thraten
 
-        !$omp parallel do default(shared)  &
-        !$omp private(i,j,k)
-        do k=1,nk
-        do j=0,nj+1
-        do i=0,ni+1
-          sadv(i,j,k)=th0(i,j,k)+tha(i,j,k)
-        enddo
-        enddo
-        enddo
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+          thten1(i,j,k) = thten1(i,j,k) + thraten(i,j,k)
+          enddo
+          enddo
+          enddo
 
         if( dotbud .and. td_rad.ge.1 )then
           !$omp parallel do default(shared)  &
@@ -1201,48 +1146,7 @@
           do k=1,nk
           do j=1,nj
           do i=1,ni
-            tdiag(i,j,k,td_rad) = thten1(i,j,k)
-          enddo
-          enddo
-          enddo
-        endif
-        IF( eqtset.eq.1 )THEN
-          ! traditional equation set:
-          !$omp parallel do default(shared)  &
-          !$omp private(i,j,k)
-          do k=1,nk
-          do j=1,nj
-          do i=1,ni
-            ! cm1r17:  swten and lwten now store TEMPERATURE tendencies:
-            thten1(i,j,k) = thten1(i,j,k) + (swten(i,j,k)+lwten(i,j,k))/(pi0(i,j,k)+ppi(i,j,k))
-          enddo
-          enddo
-          enddo
-        ELSEIF( eqtset.eq.2 )THEN
-          ! Bryan-Fritsch equation set:
-          rdt = 1.0/dt
-          !$omp parallel do default(shared)  &
-          !$omp private(i,j,k,tnew,pnew,thnew)
-          do k=1,nk
-          do j=1,nj
-          do i=1,ni
-            ! cm1r17:  swten and lwten now store TEMPERATURE tendencies:
-            ! NOTE:  sadv stores theta (see above)
-            tnew = sadv(i,j,k)*(pi0(i,j,k)+ppi(i,j,k)) + dt*(swten(i,j,k)+lwten(i,j,k))
-            pnew = rho(i,j,k)*(rd+rv*qa(i,j,k,nqv))*tnew
-            thnew = tnew/((pnew*rp00)**rovcp)
-            thten1(i,j,k) = thten1(i,j,k) + (thnew-sadv(i,j,k))*rdt
-          enddo
-          enddo
-          enddo
-        ENDIF
-        if( dotbud .and. td_rad.ge.1 )then
-          !$omp parallel do default(shared)  &
-          !$omp private(i,j,k)
-          do k=1,nk
-          do j=1,nj
-          do i=1,ni
-            tdiag(i,j,k,td_rad) = thten1(i,j,k)-tdiag(i,j,k,td_rad)
+            tdiag(i,j,k,td_rad) = thraten(i,j,k)
           enddo
           enddo
           enddo
@@ -1289,11 +1193,11 @@
 
           call turbu(dt,xh,ruh,xf,rxf,arf1,arf2,uf,vh,mh,mf,rmf,rho,rf,  &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gxu,     &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,ua,uten1,wa,m11,m12,m13,m22,kmv,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,ua,uten1,wa,m11,m12,m13,m22,kmv,cm0, &
                      kmw,ufw,u1b,u2pt,ufwk,doubud,udiag)
           call turbv(dt,xh,rxh,arh1,arh2,uh,xf,rvh,vf,mh,mf,rho,rr,rf,   &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gyv,  &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,va,vten1,wa,m12,m22,m23,kmv,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,va,vten1,wa,m12,m22,m23,kmv,cm0, &
                      kmw,vfw,v1b,v2pt,vfwk,dovbud,vdiag)
           call turbw(dt,xh,rxh,arh1,arh2,uh,xf,vh,mh,mf,rho,rf,gz,rgzu,rgzv,rds,sigma,   &
                      dum1,dum2,dum3,dum4,dum5,dum6,wa,wten1,m13,m23,m33,m22,kmh,cm0,  &
@@ -1305,11 +1209,11 @@
 
           call turbu(dt,xh,ruh,xf,rxf,arf1,arf2,uf,vh,mh,mf,rmf,rho,rf,  &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gxu,     &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,ua,uten1,wa,t11,t12,t13,t22,rrw,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,ua,uten1,wa,t11,t12,t13,t22,rrw,cm0, &
                      kmw,ufw,u1b,u2pt,ufwk,doubud,udiag)
           call turbv(dt,xh,rxh,arh1,arh2,uh,xf,rvh,vf,mh,mf,rho,rr,rf,   &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gyv,  &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,va,vten1,wa,t12,t22,t23,rrw,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,va,vten1,wa,t12,t22,t23,rrw,cm0, &
                      kmw,vfw,v1b,v2pt,vfwk,dovbud,vdiag)
           call turbw(dt,xh,rxh,arh1,arh2,uh,xf,vh,mh,mf,rho,rf,gz,rgzu,rgzv,rds,sigma,   &
                      dum1,dum2,dum3,dum4,dum5,dum6,wa,wten1,t13,t23,t33,t22,wten,cm0,  &
@@ -1320,11 +1224,11 @@
 
           call turbu(dt,xh,ruh,xf,rxf,arf1,arf2,uf,vh,mh,mf,rmf,rho,rf,  &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gxu,     &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,ua,uten1,wa,t11,t12,t13,t22,kmv,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,ua,uten1,wa,t11,t12,t13,t22,kmv,cm0, &
                      kmw,ufw,u1b,u2pt,ufwk,doubud,udiag)
           call turbv(dt,xh,rxh,arh1,arh2,uh,xf,rvh,vf,mh,mf,rho,rr,rf,   &
                      zs,gz,rgz,gzu,gzv,rds,sigma,rdsf,sigmaf,gyv,  &
-                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,va,vten1,wa,t12,t22,t23,kmv,cm0, &
+                     dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,va,vten1,wa,t12,t22,t23,kmv,cm0, &
                      kmw,vfw,v1b,v2pt,vfwk,dovbud,vdiag)
           call turbw(dt,xh,rxh,arh1,arh2,uh,xf,vh,mh,mf,rho,rf,gz,rgzu,rgzv,rds,sigma,   &
                      dum1,dum2,dum3,dum4,dum5,dum6,wa,wten1,t13,t23,t33,t22,kmh,cm0,  &
@@ -1394,21 +1298,15 @@
         ENDIF
 
         IF(iptra.eq.1)THEN
+        
           ! passive tracers: 
           !Ivan Basic: set the 1st parameter from 0 to 1 (call turbs(1,...)). June 2022
           !Ivan Basic: replaced qvflux with the custom "ptflux" (call turbs(...,qvflux,...)). June 2022
           do n=1,npt
-          	if(n.eq.1)then
-            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux1,   &
+            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux(:,:,n),   &
                        rds,sigma,rdsf,sigmaf,mh,mf,gz,rgz,gzu,rgzu,gzv,rgzv,gx,gxu,gy,gyv, &
                        dum1,dum2,dum3,dum4,dum5,sten,rho,rr,rf,pta(ib,jb,kb,n),ptten(ib,jb,kb,n),khh,khv,cm0,dum7,dum8, &
                        .false.,ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,qdiag,1,1,0)
-            elseif(n.eq.2)then
-            call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux2,   &
-                       rds,sigma,rdsf,sigmaf,mh,mf,gz,rgz,gzu,rgzu,gzv,rgzv,gx,gxu,gy,gyv, &
-                       dum1,dum2,dum3,dum4,dum5,sten,rho,rr,rf,pta(ib,jb,kb,n),ptten(ib,jb,kb,n),khh,khv,cm0,dum7,dum8, &
-                       .false.,ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,qdiag,1,1,0)
-            endif
           enddo
         ENDIF
 
@@ -1674,8 +1572,63 @@
                    ufrc,vfrc,thfrc,qvfrc,ug,vg,dvdr,                 &
                    uavg,vavg,thavg,qavg,cavg,                        &
                    ua,va,tha,qa,uten1,vten1,thten1,qten,             &
-                   o30 ,zir,ruh,ruf,rvh,rvf,mtime)
+                   o30 ,thraten,zir,ruh,ruf,rvh,rvf,mtime)
         if(timestats.ge.1) time_misc=time_misc+mytime()
+
+      ENDIF
+
+!-----------------------------------------------------------------------------
+!  Convective parameterization:
+
+    IF( cuparam.ge.1 )THEN
+
+      !$omp parallel do default(shared)  &
+      !$omp private(i,j,k)
+      do k=1,nk
+      do j=1,nj+1
+      do i=1,ni+1
+        thten1(i,j,k) = thten1(i,j,k) + thcuten(i,j,k)
+          uten1(i,j,k) = uten1(i,j,k) + 0.5*(ucuten(i-1,j,k)+ucuten(i,j,k))
+          vten1(i,j,k) = vten1(i,j,k) + 0.5*(vcuten(i,j-1,k)+vcuten(i,j,k))
+      enddo
+      enddo
+      enddo
+
+      IF(imoist.eq.1)THEN
+        if(nqv.ge.1)then
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            qten(i,j,k,nqv) = qten(i,j,k,nqv) + qvcuten(i,j,k)
+          enddo
+          enddo
+          enddo
+        endif
+        if(nqc.ge.1)then
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            qten(i,j,k,nqc) = qten(i,j,k,nqc) + qccuten(i,j,k)
+          enddo
+          enddo
+          enddo
+        endif
+        if(nqi.ge.1)then
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            qten(i,j,k,nqi) = qten(i,j,k,nqi) + qicuten(i,j,k)
+          enddo
+          enddo
+          enddo
+        endif
+      ENDIF
 
       ENDIF
 
@@ -1809,6 +1762,7 @@
           endif
         enddo
       endif
+      if(timestats.ge.1) time_misc=time_misc+mytime()
     ENDIF
 
 
@@ -1839,7 +1793,7 @@
         tem = 0.0001*tsmall
         IF(imoist.eq.1)THEN
           !$omp parallel do default(shared)  &
-          !$omp private(i,j,k,tnew,pnew,pinew,thnew,qvnew)
+          !$omp private(i,j,k,pinew,thnew,qvnew)
           do k=1,nk
           do j=1,nj
           do i=1,ni
@@ -1874,7 +1828,7 @@
           endif
         ELSE
           !$omp parallel do default(shared)  &
-          !$omp private(i,j,k,tnew,pnew,pinew,thnew,qvnew)
+          !$omp private(i,j,k,pinew,thnew)
           do k=1,nk
           do j=1,nj
           do i=1,ni

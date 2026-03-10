@@ -300,6 +300,15 @@
       real :: pisfc,qvsat,tem,shf
       double precision, dimension(nj) :: bud1
       real :: thmag,qvmag,trat1,trat2
+      !--- declarations for set_flx.eq.2 block
+      integer, parameter :: max_entries = 1000
+      real, allocatable, save :: flux_arr(:), qflux_arr(:)
+      logical, save :: first_call
+      integer :: ios, i1, i2
+      integer, save :: n_forcing_times
+      real :: dt_forcing, index_r, w, flux, qflux
+      character(len=100) :: fname
+      real, allocatable :: temp_flux(:), temp_qflux(:)
 
 !-----------------------------------------------------------------------
 !
@@ -308,6 +317,9 @@
 !-----------------------------------------------------------------------
 
   !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
+
+  !--- initialize first_call before use
+  first_call = .true.
 
   setting_flux:  &
   IF( set_flx.eq.1 )THEN
@@ -335,6 +347,50 @@
     ENDIF
 
   !c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c-c!
+
+  ELSEIF( set_flx.eq.2 )THEN
+    ! Read time-varying fluxes from text file, interpolate using rtime
+    fname = 'flux_forcing.txt'
+
+    if (first_call) then
+      first_call = .false.
+      allocate(flux_arr(max_entries), qflux_arr(max_entries))
+      open(unit=99, file=fname, status='old')
+      read(99,*) dt_forcing
+      n_forcing_times = 0
+      do
+        read(99,*,iostat=ios) flux_arr(n_forcing_times+1), qflux_arr(n_forcing_times+1)
+        if (ios /= 0) exit
+        n_forcing_times = n_forcing_times + 1
+      enddo
+      close(99)
+      ! Safely trim the flux arrays to n_forcing_times entries
+      allocate(temp_flux(n_forcing_times), temp_qflux(n_forcing_times))
+      temp_flux = flux_arr(1:n_forcing_times)
+      temp_qflux = qflux_arr(1:n_forcing_times)
+      deallocate(flux_arr, qflux_arr)
+      allocate(flux_arr(n_forcing_times), qflux_arr(n_forcing_times))
+      flux_arr = temp_flux
+      qflux_arr = temp_qflux
+    endif
+
+    index_r = rtime / dt_forcing
+    i1 = floor(index_r)
+    i2 = i1 + 1
+    w = index_r - i1
+    i1 = mod(i1, size(flux_arr)) + 1
+    i2 = mod(i2, size(flux_arr)) + 1
+
+    flux  = (1.0 - w) * flux_arr(i1)  + w * flux_arr(i2)
+    qflux = (1.0 - w) * qflux_arr(i1) + w * qflux_arr(i2)
+    if(myid.eq.0) print *,'  thflux = ',flux
+    !$omp parallel do default(shared) private(i,j)
+    DO j=1,nj
+    do i=1,ni
+      thflux(i,j) = flux
+      qvflux(i,j) = qflux
+    enddo
+    ENDDO
 
   ELSE
 
@@ -1321,3 +1377,4 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
   END MODULE sfcphys_module
+

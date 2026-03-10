@@ -1,1 +1,33 @@
-/sw/spack-levante/netcdf-fortran-4.5.3-pvmcx6/lib/libnetcdff.settings
+# NetCDF Fortran Configuration Summary
+==============================
+
+# General
+-------
+Library Version:		4.5.3
+Configured On:		        Thu Mar 17 17:16:47 CET 2022
+Host System:		        x86_64-pc-linux-gnu
+Build Directory: 	        /home/k/k202066/.spack/stage/spack-stage-netcdf-fortran-4.5.3-pvmcx6344fsbe2xplnze3sr4cyazexfb/spack-src
+Install Prefix:                 /sw/spack-levante/netcdf-fortran-4.5.3-pvmcx6
+
+# Compiling Options
+-----------------
+Fortran Compiler:               /sw/spack-workplace/spack/lib/spack/env/intel/ifort
+FFLAGS:                         -g
+LDFLAGS:		        -L/sw/spack-levante/netcdf-c-4.8.1-f7hh57/lib
+AM_LDFLAGS:                     
+Shared Library:		        yes
+Static Library:		        yes
+Extra libraries:	        -lnetcdf -lm 
+
+# Features
+--------
+F03:                            yes
+Dap Support:                    yes
+Logging Support:                yes
+NetCDF-2 API:                   yes
+NetCDF-4 API:                   yes
+CDF5 Support:                   yes
+Parallel IO:                    no
+NetCDF4 Parallel IO:            no
+PnetCDF Parallel IO:            no
+SZIP Write Support:             yes

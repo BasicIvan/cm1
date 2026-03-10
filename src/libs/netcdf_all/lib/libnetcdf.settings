@@ -1,1 +1,47 @@
-/sw/spack-levante/netcdf-c-4.8.1-f7hh57/lib/libnetcdf.settings
+# NetCDF C Configuration Summary
+==============================
+
+# General
+-------
+NetCDF Version:		4.8.1
+Dispatch Version:       3
+Configured On:		Fri Feb 18 14:41:20 CET 2022
+Host System:		x86_64-pc-linux-gnu
+Build Directory: 	/home/k/k202066/.spack/stage/spack-stage-netcdf-c-4.8.1-f7hh57cvqmie25fcva4rgmvap6gxbzzn/spack-src
+Install Prefix:         /sw/spack-levante/netcdf-c-4.8.1-f7hh57
+
+# Compiling Options
+-----------------
+C Compiler:		/sw/spack-workplace/spack/lib/spack/env/intel/icc
+CFLAGS:			-fPIC -fno-strict-aliasing
+CPPFLAGS:		-I/usr/include -I/sw/spack-levante/hdf5-1.12.1-4l5deg/include -I/sw/spack-levante/hdf-4.2.15-jvpsue/include
+LDFLAGS:		-L/usr/lib64 -L/sw/spack-levante/hdf5-1.12.1-4l5deg/lib -L/sw/spack-levante/hdf-4.2.15-jvpsue/lib
+AM_CFLAGS:		
+AM_CPPFLAGS:		
+AM_LDFLAGS:		
+Shared Library:		yes
+Static Library:		yes
+Extra libraries:	-ljpeg -lmfhdf -ldf -ljpeg -lhdf5_hl -lhdf5 -lm -lz -lcurl -ljpeg -lsz -ltirpc
+
+# Features
+--------
+NetCDF-2 API:		yes
+HDF4 Support:		yes
+HDF5 Support:		yes
+NetCDF-4 API:		yes
+NC-4 Parallel Support:	no
+PnetCDF Support:	no
+DAP2 Support:		yes
+DAP4 Support:		yes
+Byte-Range Support:	no
+Diskless Support:	yes
+MMap Support:		no
+JNA Support:		no
+CDF5 Support:		yes
+ERANGE Fill Support:	no
+Relaxed Boundary Check:	yes
+SZIP Support:           yes
+SZIP Write Support:     yes
+Parallel Filters:       yes
+NCZarr Support:		yes
+Multi-Filter Support:	yes

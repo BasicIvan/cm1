@@ -5,11 +5,11 @@
 
 !-----------------------------------------------------------------------------
 !
-!  CM1 Numerical Model, Release 21.0  (cm1r21.0)
-!  20 April 2022
+!  CM1 Numerical Model, Release 21.1  (cm1r21.1)
+!  24 March 2024
 !  https://www2.mmm.ucar.edu/people/bryan/cm1/
 !
-!  (c)2022 - University Corporation for Atmospheric Research 
+!  (c)2024 - University Corporation for Atmospheric Research 
 !
 !-----------------------------------------------------------------------------
 !  Quick Index:
@@ -82,7 +82,7 @@
                    dumk1,dumk2,dumk3,dumk4,rds,sigma,rdsf,sigmaf,    &
                    zh,mh,rmh,c1,c2,zf,mf,rmf,wprof,                  &
                    pi0,rho0,prs0,thv0,th0,rth0,qv0,qc0,              &
-                   qi0,rr0,rf0,rrf0,thrd,                            &
+                   qi0,rr0,rf0,rrf0,                                 &
                    zs,gz,rgz,gzu,rgzu,gzv,rgzv,dzdx,dzdy,gx,gxu,gy,gyv,f2d,cm0, &
                    radbcw,radbce,radbcs,radbcn,dtu,dtu0,dtv,dtv0,    &
                    dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,dum9,     &
@@ -95,10 +95,10 @@
                    tha,th3d,thten,thten1,thterm,                     &
                    qpten,qtten,qvten,qcten,qa,q3d,qten,              &
                    tkea,tke3d,tketen,qke_adv,qke,qke3d,              &
-                   pta,pt3d,ptten,                                   &
+                   pta,pt3d,ptten,thften,qvften,                     &
                    cfb,cfa,cfc,ad1,ad2,pdt,lgbth,lgbph,rhs,trans,flag, &
                    reqs_u,reqs_v,reqs_w,reqs_s,reqs_p,reqs_p2,reqs_p3, &
-                   reqs_x,reqs_y,reqs_z,reqs_tk,reqs_q,reqs_t,       &
+                   reqs_x,reqs_y,reqs_z,reqs_tk,reqs_tk2,reqs_q,reqs_t, &
                    nw1,nw2,ne1,ne2,sw1,sw2,se1,se2,                  &
                    ww1,ww2,we1,we2,ws1,ws2,wn1,wn2,                  &
                    pw1,pw2,pe1,pe2,ps1,ps2,pn1,pn2,                  &
@@ -126,7 +126,6 @@
       use bc_module
       use comm_module
       use adv_module
-      use adv_routines , only : movesfc
       use sound_module
       use sounde_module
       use soundns_module
@@ -168,7 +167,6 @@
       real, intent(in),    dimension(kb:ke) :: wprof
       real, intent(in), dimension(ib:ie,jb:je,kb:ke) :: pi0,rho0,prs0,thv0,th0,rth0,qv0,qc0
       real, intent(in), dimension(ib:ie,jb:je,kb:ke) :: qi0,rr0,rf0,rrf0
-      real, intent(in), dimension(ibb2:ibe2,jbb2:jbe2,kbb2:kbe2) :: thrd
       real, intent(in), dimension(ib:ie,jb:je) :: zs
       real, intent(in), dimension(itb:ite,jtb:jte) :: gz,rgz,gzu,rgzu,gzv,rgzv,dzdx,dzdy
       real, intent(in), dimension(itb:ite,jtb:jte,ktb:kte) :: gx,gxu,gy,gyv
@@ -193,12 +191,13 @@
       real, intent(inout), dimension(ibt:iet,jbt:jet,kbt:ket) :: tkea,tke3d,tketen
       real, intent(inout), dimension(ibmynn:iemynn,jbmynn:jemynn,kbmynn:kemynn) :: qke_adv,qke,qke3d
       real, intent(inout), dimension(ibp:iep,jbp:jep,kbp:kep,npt) :: pta,pt3d,ptten
+      real, intent(inout), dimension(ibcu:iecu,jbcu:jecu,kbcu:kecu) :: thften,qvften
       real, intent(in), dimension(ipb:ipe,jpb:jpe,kpb:kpe) :: cfb
       real, intent(in), dimension(kpb:kpe) :: cfa,cfc,ad1,ad2
       complex, intent(inout), dimension(ipb:ipe,jpb:jpe,kpb:kpe) :: pdt,lgbth,lgbph
       complex, intent(inout), dimension(ipb:ipe,jpb:jpe) :: rhs,trans
       logical, intent(inout), dimension(ib:ie,jb:je,kb:ke) :: flag
-      integer, intent(inout), dimension(rmp) :: reqs_u,reqs_v,reqs_w,reqs_s,reqs_p,reqs_p2,reqs_p3,reqs_x,reqs_y,reqs_z,reqs_tk
+      integer, intent(inout), dimension(rmp) :: reqs_u,reqs_v,reqs_w,reqs_s,reqs_p,reqs_p2,reqs_p3,reqs_x,reqs_y,reqs_z,reqs_tk,reqs_tk2
       integer, intent(inout), dimension(rmp,numq) :: reqs_q
       integer, intent(inout), dimension(rmp,npt) :: reqs_t
       real, intent(inout), dimension(kmt) :: nw1,nw2,ne1,ne2,sw1,sw2,se1,se2
@@ -327,6 +326,8 @@
         ifql:  &
         if( nql1.le.0 )then
 
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
           do k=1,nk
           do j=1,nj
           do i=1,ni
@@ -337,6 +338,8 @@
 
         else  ifql
 
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
           do k=1,nk
           do j=1,nj
           do i=1,ni
@@ -345,8 +348,10 @@
           enddo
           enddo
 
-          do n=nql1+1,nql2
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k,n)
           do k=1,nk
+          do n=nql1+1,nql2
           do j=1,nj
           do i=1,ni
             dum2(i,j,k)=dum2(i,j,k)+q3d(i,j,k,n)
@@ -359,6 +364,8 @@
 
           IF(iice.eq.1)THEN
 
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
             do k=1,nk
             do j=1,nj
             do i=1,ni
@@ -367,8 +374,10 @@
             enddo
             enddo
 
-            do n=nqs1+1,nqs2
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k,n)
             do k=1,nk
+            do n=nqs1+1,nqs2
             do j=1,nj
             do i=1,ni
               dum3(i,j,k)=dum3(i,j,k)+q3d(i,j,k,n)
@@ -379,6 +388,8 @@
 
           ELSE
 
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
             do k=1,nk
             do j=1,nj
             do i=1,ni
@@ -391,6 +402,8 @@
 
           IF(eqtset.eq.2)THEN
 
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
             do k=1,nk
             do j=1,nj
             do i=1,ni
@@ -411,6 +424,8 @@
 
           ELSEIF(eqtset.eq.1)THEN
 
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
             do k=1,nk
             do j=1,nj
             do i=1,ni
@@ -428,6 +443,8 @@
         ELSE
           ! dry:
 
+          !$omp parallel do default(shared)  &
+          !$omp private(i,j,k)
           do k=1,nk
           do j=1,nj
           do i=1,ni
@@ -452,7 +469,7 @@
 
         !$omp parallel do default(shared)  &
         !$omp private(i,j,k)
-        do k=1,nk !+1? Ivan Basic 28.03.23.
+        do k=1,nk
         do j=1,nj+1
         do i=1,ni+1
           uten(i,j,k)=uten1(i,j,k)
@@ -901,7 +918,7 @@
           call   advw(nrk   ,xh,rxh,arh1,arh2,uh,xf,vh,gz,rgz,mh,mf,rho0,rr0,rf0,rrf0,  &
                       dum1,dum2,dum3,dum4,dum5,dum6,dum7,divx,                       &
                       rru,rrv,rrw,w3d  ,wten,rds,rdsf,c1,c2,rho,dttmp,               &
-                      dowbud ,wdiag,hadvordrv,vadvordrv,advwenov,bndy,kbdy,uf,vf,u3d,v3d,hflxw,hflxe,hflxs,hflxn)
+                      dowbud ,wdiag,hadvordrv,vadvordrv,advwenov,bndy,kbdy,uf,vf,u3d,v3d,hflxw,hflxe,hflxs,hflxn,.true.)
 
 !--------------------------------------------------------------------
 !  Buoyancy
@@ -1396,6 +1413,17 @@
           enddo
         ENDIF
 
+        IF( cuparam.eq.1 .and. nrk.eq.3 )THEN
+          !$omp parallel do default(shared)   &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            thften(i,j,k)=thten(i,j,k)
+          enddo
+          enddo
+          enddo
+        ENDIF
       if(timestats.ge.1) time_misc=time_misc+mytime()
 
 
@@ -1408,6 +1436,22 @@
                    flag,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,rdsf,c1,c2,rho,rr,diffit, &
                    dotbud,ibdt,iedt,jbdt,jedt,kbdt,kedt,ntdiag,tdiag,td_hadv,td_vadv,td_lsw, &
                    td_hidiff,td_vidiff,td_hediff,wprof,dumk1,dumk2,hadvordrs,vadvordrs,kbdy,bndy,hflxw,hflxe,hflxs,hflxn,out3d)
+
+
+        IF( cuparam.eq.1 .and. nrk.eq.3 )THEN
+          rdt = 1.0/dt
+          !$omp parallel do default(shared)   &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            thften(i,j,k) = thten(i,j,k)-thften(i,j,k)
+          enddo
+          enddo
+          enddo
+          if(timestats.ge.1) time_misc=time_misc+mytime()
+        ENDIF
+
 
       !$omp parallel do default(shared)   &
       !$omp private(i,j,k)
@@ -1482,12 +1526,37 @@
       if( idiff.eq.1 .and. difforder.eq.6 ) diffit = 1
 
     IF( n.eq.nqv )THEN
+        IF( cuparam.eq.1 .and. nrk.eq.3 )THEN
+          !$omp parallel do default(shared)   &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            qvften(i,j,k) = sten(i,j,k)
+          enddo
+          enddo
+          enddo
+          if(timestats.ge.1) time_misc=time_misc+mytime()
+        ENDIF
       call advs(nrk,1,bflag,bsq(n),xh,rxh,arh1,arh2,uh,ruh,xf,vh,rvh,gz,rgz,mh,rmh,     &
                  rho0,rr0,rf0,rrf0,dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,divx,        &
                  rru,rrv,rrw,qa(ib,jb,kb,n),q3d(ib,jb,kb,n),sten,pdef,0,dttmp,weps,     &
                  flag,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,rdsf,c1,c2,rho,rr,diffit, &
                  doqbud ,ibdq,iedq,jbdq,jedq,kbdq,kedq,nqdiag,qdiag,qd_hadv,qd_vadv,qd_lsw, &
                  qd_hidiff,qd_vidiff,qd_hediff,wprof,dumk1,dumk2,hadvordrs,vadvordrs,kbdy,bndy,hflxw,hflxe,hflxs,hflxn,out3d)
+        IF( cuparam.eq.1 .and. nrk.eq.3 )THEN
+          rdt = 1.0/dt
+          !$omp parallel do default(shared)   &
+          !$omp private(i,j,k)
+          do k=1,nk
+          do j=1,nj
+          do i=1,ni
+            qvften(i,j,k) = sten(i,j,k)-qvften(i,j,k)
+          enddo
+          enddo
+          enddo
+          if(timestats.ge.1) time_misc=time_misc+mytime()
+        ENDIF
     ELSE
       call advs(nrk,1,bflag,bsq(n),xh,rxh,arh1,arh2,uh,ruh,xf,vh,rvh,gz,rgz,mh,rmh,     &
                  rho0,rr0,rf0,rrf0,dum1,dum2,dum3,dum4,dum5,dum6,dum7,dum8,divx,        &
@@ -1729,7 +1798,7 @@
           call   advw(nrk   ,xh,rxh,arh1,arh2,uh,xf,vh,gz,rgz,mh,mf,rho0,rr0,rf0,rrf0,  &
                       dum1,dum2,dum3,dum4,dum5,dum6,dum7,divx,                       &
                       rru,rrv,rrw,tke3d,wten,rds,rdsf,c1,c2,rho,dttmp,               &
-                      .false.,wdiag,hadvordrs,vadvordrs,advwenos,bndy,kbdy,uf,vf,u3d,v3d,hflxw,hflxe,hflxs,hflxn)
+                      .false.,wdiag,hadvordrs,vadvordrs,advwenos,bndy,kbdy,uf,vf,u3d,v3d,hflxw,hflxe,hflxs,hflxn,.false.)
 
         if( dotdwrite .and. kd_adv.ge.1 )then
         if( nrk.eq.nrkmax )then
@@ -1820,8 +1889,8 @@
 
         call bcs(qke3d)
 #ifdef MPI
-        call comm_3s_start(qke3d,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,reqs_tk)
-        call comm_3s_end(  qke3d,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,reqs_tk)
+        call comm_3s_start(qke3d,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,reqs_tk2)
+        call comm_3s_end(  qke3d,sw31,sw32,se31,se32,ss31,ss32,sn31,sn32,reqs_tk2)
 #endif
 
         weps = 10.0*epsilon
@@ -1892,8 +1961,6 @@
       endif
 
     DO n=1,npt
-
-      ! t33 = dummy
 
       bflag=0
       if(stat_qsrc.eq.1 .and. nrk.eq.nrkmax) bflag=1
@@ -1978,7 +2045,9 @@
         mass2 = temq1
         p2 = temq2
 
-        tem = ( (mass1/mass2)**rddcv - 1.0d0 )*p2/(nx*ny*nz)
+!!!        tem = ( (mass1/mass2)**rddcv - 1.0d0 )*p2/(nx*ny*nz)
+        ! cm1r21.1: fix for very large grids
+        tem = ( (mass1/mass2)**rddcv - 1.0d0 )*p2/real( int(nx,8)*int(ny,8)*int(nz,8) , 8 )
 
 !!!        if( myid.eq.0 ) print *,'  temd,tem = ',temd,tem
 

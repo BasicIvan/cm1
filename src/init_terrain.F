@@ -185,7 +185,7 @@
           ELSEIF(itern.eq.12)THEN
 
           ! 170313:  zs_all array stores terrain for the entire domain
-          allocate( zs_all(ny,nx) )
+          allocate( zs_all(ny,nx) ) ! fortran reads back to front
 
           ! only processor 0 reads file:
 
@@ -206,7 +206,7 @@
               call stopcm1
             end if
 
-            status = nf90_inq_varid(ncid,"myzs",varid)
+            status = nf90_inq_varid(ncid,'myzs',varid)
             if (status /= nf90_noerr) then
                     print *, 'error nf90_inq_varid'
                     print *, 'status: ', status
@@ -219,28 +219,27 @@
             status = nf90_close(ncid)
               print *, 'finished reading'
               print *, 'min, max:', minval(zs_all), maxval(zs_all)
-
+              
           ENDIF
 
 #ifdef MPI
           ! communicate data to all processors:
-          call MPI_BCAST(zs_all,nx*ny,MPI_REAL,0,MPI_COMM_WORLD,ierr)
+          call MPI_BCAST(zs_all,ny*nx,MPI_REAL,0,MPI_COMM_WORLD,ierr)
 #endif
 
-          ! 170313:
-          do jj=1,ny
-          do ii=1,nx
-            i = ii - myi1 + 1
-            j = jj - myj1 + 1
-            ! check to see if this processor has this gridpoint:
-            IF( i.ge.ib .and. i.le.ie .and. j.ge.jb .and. j.le.je )THEN
-              zs(i,j) = zs_all(jj,ii)
-            ENDIF
-          enddo
-          enddo
+          do jj = 1, ny
+    		do ii = 1, nx
+        		i = ii - myi1 + 1
+        		j = ny - jj + 1 - myj1 + 1  ! Reverse jj along ny
+        		! Check if this processor has this grid point:
+        		IF (i >= ib .AND. i <= ie .AND. j >= jb .AND. j <= je) THEN
+            		zs(i, j) = zs_all(ii, jj)
+        		ENDIF
+    		end do
+		end do
 
-          ! zs_all no longer needed ... deallocate:
-          deallocate( zs_all )
+        ! zs_all no longer needed ... deallocate:
+        deallocate( zs_all )
 !----------------------------------------------------------
 
         ENDIF

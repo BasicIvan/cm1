@@ -1,15 +1,15 @@
 # directories
-MODEL=/work/bb1096/b381871/cm1/cm1r21.0/run/cm1.exe
-
+MODEL=/work/bb1096/b381871/cm1/cm1r21.1/run/cm1.exe
+OUTPUT=/work/bb1096/b381871/les_output/swiss_midlands_2026
 # MPI
-nodes=10
+nodes=16
 tasks_per_node=128
-
+stacksize=10240000     # Set stack size (10 GB)
 # OpenMP
 cpus_per_task=1
 
 # job paramaters
-jobname=test_dtl1
-time=02:00:00
-run_time=600.0
+jobname=LES100_test16nodes
+time=08:00:00
+run_time=28800.0
 num_files=1
