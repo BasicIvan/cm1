@@ -5,6 +5,7 @@ RUN_CM1/INPUT/4*
 RUN_CM1/INPUT/5*
 RUN_CM1/INPUT/6*
 RUN_CM1/INPUT/7*
+RUN_CM1/INPUT/8*
 src/libs/*
 # editor / OS junk
 *.swp
