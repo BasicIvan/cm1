@@ -43,9 +43,10 @@
       integer :: i,j,k,l,ii,jj
       real :: x1,x2,xcoast
       
-      !Ivan Basic (for mylanduse.nc) 29.11.2024.
+      ! Ivan Basic 2024-11-29 add mylanduse input
       integer, dimension(:,:), allocatable :: mylanduse
       integer :: status, ncid, varid, dimid, mynx, myny
+      logical :: landuse_file_exists
       
 
 !-----------------------------------------------------------------------
@@ -142,7 +143,7 @@
 
       ELSEIF( initsfc.eq.5 )THEN
     
-      	! Ivan Basic 29.11.2024.
+      	! Ivan Basic 2024-11-29 load mylanduse
 ! -------------------------- loading mylanduse.nc --------------------------  
           allocate( mylanduse(ny,nx) ) ! fortran reads back to front
 #ifdef MPI
@@ -150,37 +151,54 @@
 #endif
           ! only processor 0 reads file:
 
+#ifdef NETCDF
           IF( myid.eq.0 )THEN
-              print *, 'reading terrain from mylanduse.nc...'
+            ! Ivan Basic 2026-07-27 validate required mylanduse input
+            inquire(file='mylanduse.nc',exist=landuse_file_exists)
+            IF( .not.landuse_file_exists )THEN
+              print *,'ERROR: initsfc=5 requires mylanduse.nc, ',  &
+                      'but the file is missing.'
+              call stopcm1
+            ENDIF
+
+              print *, 'reading land use from mylanduse.nc...'
             status=nf90_open('mylanduse.nc', mode=nf90_nowrite , ncid=ncid)
-            status=nf90_inq_dimid(ncid,'x', dimid)
+            call check_landuse_netcdf(status,'open mylanduse.nc')
+            status=nf90_inq_dimid(ncid,'x',dimid)
+            call check_landuse_netcdf(status,'find dimension x')
             status=nf90_inquire_dimension(ncid,dimid,len=mynx)
-            status=nf90_inq_dimid(ncid,'y', dimid)
+            call check_landuse_netcdf(status,'read dimension x')
+            status=nf90_inq_dimid(ncid,'y',dimid)
+            call check_landuse_netcdf(status,'find dimension y')
             status=nf90_inquire_dimension(ncid,dimid,len=myny)
+            call check_landuse_netcdf(status,'read dimension y')
 
             print *, 'mynx, nx: ', mynx, nx
             print *, 'myny, ny: ', myny, ny
 
             if (mynx.ne.nx .or. myny.ne.ny) then
-              print *, 'status: ', status
-              print *, 'mynx does not equal nx or myny does not equal ny; stopping'
+              print *,'ERROR: mylanduse.nc dimensions do not match CM1.'
+              print *,'  file x, y    = ',mynx,myny
+              print *,'  model nx, ny = ',nx,ny
               call stopcm1
             end if
 
             status = nf90_inq_varid(ncid,'landuse',varid)
-            if (status /= nf90_noerr) then
-                    print *, 'error nf90_inq_varid'
-                    print *, 'status: ', status
-            endif
+            call check_landuse_netcdf(status,'find variable landuse')
             status = nf90_get_var(ncid,varid,mylanduse)
-            if (status /= nf90_noerr) then
-                    print *, 'error nf90_get_var'
-                    print *, 'status: ', status
-            endif
+            call check_landuse_netcdf(status,'read variable landuse')
             status = nf90_close(ncid)
+            call check_landuse_netcdf(status,'close mylanduse.nc')
               print *, 'finished reading'
     		
           ENDIF
+#else
+          IF( myid.eq.0 )THEN
+            print *,'ERROR: initsfc=5 requires CM1 to be built with ',  &
+                    'NetCDF support.'
+          ENDIF
+          call stopcm1
+#endif
 
 #ifdef MPI
           ! communicate data to all processors:
@@ -202,7 +220,7 @@
       	enddo
       	enddo
       	
-        ! landuse indices from mylanduse.nc Ivan Basic 06.12.2024.
+        ! Ivan Basic 2024-12-06 map mylanduse indices
         do jj = 1, ny
         do ii = 1, nx
         	i = ii - myi1 +1
@@ -576,5 +594,21 @@
       call stopcm1
 
       end subroutine getlanduse
+
+#ifdef NETCDF
+      subroutine check_landuse_netcdf(status,operation)
+      use netcdf
+      implicit none
+
+      integer, intent(in) :: status
+      character(len=*), intent(in) :: operation
+
+      IF( status.ne.nf90_noerr )THEN
+        print *,'ERROR: failed to ',trim(operation),'.'
+        print *,'  NetCDF: ',trim(nf90_strerror(status))
+        call stopcm1
+      ENDIF
+      end subroutine check_landuse_netcdf
+#endif
 
   END MODULE init_surface_module

@@ -1,11 +1,12 @@
       MODULE tmea_module
 
 !-----------------------------------------------------------------------------
-!  Ivan Basic 16.03.23. added this to src folder
 !  tmea_module, Jan Weinkaemmerer, 2019/20
+! Ivan Basic 2023-03-16 integrate and extend module
 !   
-!  For on-the-fly time averaging between two outputs. See tmeafrq in namelist
-!  to set the summation frequency.
+!  For on-the-fly time averaging. tmeafrq sets the sampling interval (s).
+!  cm1.F collects only the last tmeaperiod seconds before output when
+!  tmeaperiod > 0; zero averages between outputs as before.
 !  The quantities defined in the setup_tmea subroutine appear automatically in
 !  the output. The averaging itself is done in calc_tmea. Both subroutines are
 !  called in CM1.F (main code).
@@ -62,19 +63,122 @@
         endif
 
         ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'prs_TM  '
+        desc_tmea(ntmea+ntmea2d) = 'TM pressure'
+        unit_tmea(ntmea+ntmea2d) = 'Pa'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'rho_TM  '
+        desc_tmea(ntmea+ntmea2d) = 'TM dry-air density'
+        unit_tmea(ntmea+ntmea2d) = 'kg/m^3'
+
+        if (imoist.eq.1) then
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'qv_TM  '
+        desc_tmea(ntmea+ntmea2d) = 'TM water vapor mixing ratio'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+        endif
+
+        if (iptra.eq.1) then
+        ! Ivan Basic 2024-11-27 add tracer diagnostics (following block)
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt1_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Gross primary product (CO2)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt2_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Respiration (CO2)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt3_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Anthropogenic sources (CO2)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt4_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Anthropogenic sources (CH4)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+        ! Ivan Basic 2026-05-12 add tracers (following block)
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'ptco2_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Total CO2 tracer (pt1+pt2+pt3-2*background)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'ptco2_ptco2'
+        desc_tmea(ntmea+ntmea2d) = 'second moment of total CO2 tracer'
+        unit_tmea(ntmea+ntmea2d) = '(kg/kg)^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_ptco2 '
+        desc_tmea(ntmea+ntmea2d) = 'resolved vertical flux of total CO2 tracer'
+        unit_tmea(ntmea+ntmea2d) = '(kg/kg) m/s'
+        
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt5_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Tracer with constant flux'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+        
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'pt6_TM'
+        desc_tmea(ntmea+ntmea2d) = 'Tropospheric tracer (above 2km)'
+        unit_tmea(ntmea+ntmea2d) = 'kg/kg'
+        endif
+
+        ntmea = ntmea + 1
         name_tmea(ntmea+ntmea2d) = 'u_u     '
-        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        desc_tmea(ntmea+ntmea2d) = 'second moment of u interp'
         unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
 
         ntmea = ntmea + 1
-        name_tmea(ntmea+ntmea2d) = 'v_v     '
-        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        name_tmea(ntmea+ntmea2d) = 'v_v'
+        desc_tmea(ntmea+ntmea2d) = 'second moment of v interp'
         unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
 
         ntmea = ntmea + 1
-        name_tmea(ntmea+ntmea2d) = 'w_w     '
-        desc_tmea(ntmea+ntmea2d) = 'for calculating covariances'
+        name_tmea(ntmea+ntmea2d) = 'w_w'
+        desc_tmea(ntmea+ntmea2d) = 'second moment of w interp'
         unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        
+        ! --- Additional variances and fluxes ---
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'th_th   '
+        desc_tmea(ntmea+ntmea2d) = 'variance of potential temperature'
+        unit_tmea(ntmea+ntmea2d) = 'K^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_th'
+        desc_tmea(ntmea+ntmea2d) = 'resolved vertical heat flux'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'qv_qv   '
+        desc_tmea(ntmea+ntmea2d) = 'variance of water vapour mixing ratio'
+        unit_tmea(ntmea+ntmea2d) = '(kg/kg)^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'w_qv    '
+        desc_tmea(ntmea+ntmea2d) = 'resolved vertical moisture flux'
+        unit_tmea(ntmea+ntmea2d) = '(kg/kg) m/s'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_w     '
+        desc_tmea(ntmea+ntmea2d) = 'resolved u–w momentum flux'
+        unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'v_w     '
+        desc_tmea(ntmea+ntmea2d) = 'resolved v–w momentum flux'
+        unit_tmea(ntmea+ntmea2d) = 'm^2/s^2'
+
+        ntmea = ntmea + 1
+        name_tmea(ntmea+ntmea2d) = 'u_th    '
+        desc_tmea(ntmea+ntmea2d) = 'resolved u–θ heat flux'
+        unit_tmea(ntmea+ntmea2d) = 'K m/s'
 
       end subroutine setup_tmea
 
@@ -97,7 +201,8 @@
         character(len=40), dimension(maxvars), intent(in) :: name_tmea
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: rf,lenscl
         real, dimension(ib:ie,jb:je,kb:ke+1), intent(in) :: mf
-        real, dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d), intent(inout):: tmea !Ivan Basic Feb 2026: added "+ntmea2d"
+        ! Ivan Basic 2026-02 include 2-D diagnostics
+        real, dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d), intent(inout):: tmea
         real, dimension(ib:ie,jb:je,kb:ke+1,5), intent(in) :: tke_sg
         real, dimension(ibl:iel,jbl:jel), intent(in) :: hpbl
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: th0,tha,prs,rho,t13
@@ -123,6 +228,7 @@
         
         integer :: n,i,j,k,k2,imyi,i2
         real :: tmp1,tmp2,tmp3,tmp4,r1,r2
+        real, parameter :: co2_bg = 0.00041
         real, dimension(ib:ie,jb:je,kb:ke) :: th,thw,thten,dthdx,dthdy,dthdz,dthdzs,sgs,dpdz,dqvdz
 
         real, dimension(:), allocatable :: pfoo,tfoo,qfoo
@@ -500,7 +606,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,1)+pta(i,j,k+1,1)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023.
+              ! Ivan Basic 2023-08-04
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,1) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -511,7 +618,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,2)+pta(i,j,k+1,2)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023., 21.09.2023.
+              ! Ivan Basic 2023-09-21
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,2) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -522,7 +630,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,3)+pta(i,j,k+1,3)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
+              ! Ivan Basic 2024-11-27 (following block)
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,3) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -533,7 +642,78 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,4)+pta(i,j,k+1,4)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,4) - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'pt5_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,5) - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'ptco2_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k,tmp1)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmp1 = pta(i,j,k,1)+pta(i,j,k,2)+pta(i,j,k,3)-2.0*co2_bg
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( tmp1 - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'ptco2_ptco2') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k,tmp1)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmp1 = pta(i,j,k,1)+pta(i,j,k,2)+pta(i,j,k,3)-2.0*co2_bg
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( tmp1*tmp1 - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+
+          elseif (trim(name_tmea(n)).eq.'w_ptco2') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k,tmp1,tmp2)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmp1 = 0.5*(wa(i,j,k)+wa(i,j,k+1))
+              tmp2 = pta(i,j,k,1)+pta(i,j,k,2)+pta(i,j,k,3)-2.0*co2_bg
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( tmp1*tmp2 - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+          
+          elseif (trim(name_tmea(n)).eq.'pt5_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              ! Ivan Basic 2026-05-12 (following block)
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,5) - tmea(i,j,k,n) )/dble(ncalctm)
+            enddo
+            enddo
+            enddo
+            
+          elseif (trim(name_tmea(n)).eq.'pt6_TM') then
+            !$omp parallel do default(shared)  &
+            !$omp private(i,j,k)
+            do k=1,maxk
+            do j=1,nj
+            do i=1,ni
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( pta(i,j,k,6) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -1711,7 +1891,8 @@
                   z_t = zh(i,j,k)
                 endif
               enddo
-              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then !Ivan Basic 28.03.23.
+              ! Ivan Basic 2023-03-28
+              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then
                 z_t = zh(i,j,maxk)
                 zmin = z_b + (z_t-z_b)/4.0
               endif
@@ -2247,6 +2428,3 @@
       end subroutine getavgy
 
       END MODULE tmea_module
-
-
-

@@ -595,9 +595,7 @@
 
         ENDIF
 
-        ! Ivan Basic Feb 2026: removed 9 lines where hpbl is substracted by zs.
-        ! This causes MYNN sfcmodel to fail, because negative hpbl values are passed with terrain flag. 
-        ! hpbl is actually AGL, not MSL, so there is no need for adjustment 
+        ! Ivan Basic 2026-02 keep MYNN hpbl above ground level
 
         IF( use_avg_sfc .and. ( sfcmodel.eq.1 .or. sfcmodel.eq.5 ) )THEN
             call getavgsfc(u1,v1,s1,t1,psfc,divx(ib,jb,1),avgsfcu,avgsfcv,avgsfcs,avgsfcsu,avgsfcsv,avgsfct,avgsfcq,avgsfcp,ugr,vgr)

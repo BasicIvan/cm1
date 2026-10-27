@@ -1309,7 +1309,7 @@
 
   !------------------
 
-    if( iptra.eq.1 )then
+    if( iptra.eq.1 .and. output_ptra.eq.1 )then
       do n=1,npt
         if( n.le.9 )then
           text1 = 'ptX     '

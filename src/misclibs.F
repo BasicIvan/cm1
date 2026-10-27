@@ -593,7 +593,7 @@
       subroutine getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
-                          tmeatim,dotmcalc,												& ! Ivan Basic 23.01.23.
+                          tmeatim,dotmcalc,												& ! Ivan Basic 2023-01-23
                           hifrqtim,dohifrqwrite,doinit)
       use input
       use goddard_module, only : consat2
@@ -612,7 +612,7 @@
       logical, intent(in) :: dohifrqwrite
       logical, intent(in) :: doinit
       
-      ! Ivan basic 23.01.23.
+      ! Ivan Basic 2023-01-23
       double precision, intent(in) :: tmeatim
       logical, intent(in) :: dotmcalc
 
@@ -737,7 +737,7 @@
               endif
             ENDIF
 
-            ! Ivan Basic 23.01.23.
+            ! Ivan Basic 2023-01-23 align timestep with TMEA
             IF( dotmea .and. tmeatim.gt.0.0 )THEN
               ! ramp-down timestep when approaching tmea time
               if( dotmcalc )then

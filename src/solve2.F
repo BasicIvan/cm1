@@ -119,7 +119,7 @@
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
                    dotmcalc,doazimwrite,dorestart,					 &
-                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 23.01.23.)
+                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 2023-01-23
         ! end_solve2
       use input
       use constants
@@ -243,7 +243,7 @@
       logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud
       
-      ! Ivan Basic 23.01.23.
+      ! Ivan Basic 2023-01-23 (following block)
       real, intent(inout), dimension(ib:ie+1,jb:je,kb:ke) :: ulast 
       real, intent(inout), dimension(ib:ie,jb:je+1,kb:ke) :: vlast
       real, intent(inout), dimension(ib:ie,jb:je,kb:ke+1) :: wlast
@@ -275,7 +275,8 @@
 #ifdef MPI
       integer :: reqp1,reqp2
 #endif
-      real :: pttau !Ivan Basic Sep 2022
+      ! Ivan Basic 2022-09
+      real :: pttau
       pttau = 15.0*60.0
 !--------------------------------------------------------------------
 
@@ -478,7 +479,7 @@
         enddo
         enddo
          if( doubud .and. (dotdwrite .or. dotmcalc) .and. nrk.eq.nrkmax )then
-            ! Ivan Basic 28.03.23. save u for rtke calculation:
+            ! Ivan Basic 2023-03-28 save u for resolved TKE
             do j=jb,je
             do i=ib,ie+1
               ulast(i,j,k) = u3d(i,j,k)
@@ -1338,7 +1339,7 @@
 !--------------------------------------------------------------------
 !  THETA-equation
 
-      ! Ivan Basic 28.03.23.
+      ! Ivan Basic 2023-03-28 accumulate TMEA theta budget
       if( dotbud .and. dotmcalc .and. nrk.eq.nrkmax )then
         do k=1,nk
         do j=jb,je
@@ -1473,7 +1474,7 @@
 
     DO n=1,numq
 
-      ! Ivan Basic 28.03.23.
+      ! Ivan Basic 2023-03-28 accumulate TMEA moisture budget
       if( doqbud .and. dotmcalc .and. nrk.eq.nrkmax )then
         do k=1,nk
         do j=jb,je
@@ -2001,9 +2002,10 @@
       do k=1,nk
       do j=1,nj
       do i=1,ni
-      ! Ivan Basic: this is the line where the tracer conc. is updated. dttmp * tendency (time step) * (sten). sten=ptten
-        pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*sten(i,j,k)
-        !pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*( sten(i,j,k) - pta(i,j,k,n)/pttau ) !Ivan Basic: this line is from  Jan Weinkaemmerer, 06.08.21
+      ! Ivan Basic 2022-09 update passive tracers
+      pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*sten(i,j,k)
+        ! Jan Weinkaemmerer 2021-08-06 alternative decay term:
+        !pt3d(i,j,k,n)=pta(i,j,k,n)+dttmp*( sten(i,j,k) - pta(i,j,k,n)/pttau )
       enddo
       enddo
       enddo

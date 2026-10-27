@@ -1697,7 +1697,7 @@
             !   print*, "pmid(i,1)=", pmid(i,1), "pmid(i,2)=", pmid(i,2), "pmid(i,3)=", pmid(i,3), "pmid(i,4)=", pmid(i,4)
             !   stop 'MCICA_SUBCOL: KISSVEC SEED GENERATOR REQUIRES PMID FROM BOTTOM FOUR LAYERS.'
             !endif
-            !Ivan Basic: to stop errors
+            ! Ivan Basic 2024 avoid invalid seeds
             seed1(i) = (pmid(i,1) - int(pmid(i,1)))  * 1000000000_im
             seed2(i) = (pmid(i,2) - int(pmid(i,2)))  * 1000000000_im
             seed3(i) = (pmid(i,3) - int(pmid(i,3)))  * 1000000000_im

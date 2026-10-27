@@ -1,0 +1,8 @@
+# Generated CM1 inputs belong in the run's input directory, not with recipes.
+*.nc
+input_sounding
+input_sounding_*
+input_grid_z
+input_grid_z_*
+__pycache__/
+*.pyc

@@ -33,7 +33,7 @@ LINKOPTS  = -lnetcdf -lnetcdff
 #      (eg, NCAR's yellowstone/cheyenne)
 FC   = mpif90
 #for debugging, use these OPTS settings...
-#OPTS = -O0 -g -traceback -check bounds -fpe0
+#OPTS = -O0 -g -traceback -check bounds -fpe0 -assume byterecl
 # for production speed, use these OPTS settings...
 OPTS = -O3 -xHost -ip -assume byterecl -fp-model precise -ftz -no-fma
 CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding

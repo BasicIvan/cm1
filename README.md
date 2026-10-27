@@ -1,22 +1,11 @@
-## src/ 
-Contains the source codes for the CM1 v21.1, with expanded functionality and important bug fixes for LES simulations.
+# CM1 v21.1 extensions
 
-### The added functionalities are:
-- in tmea.F: online time-averaging routine developed by Jan Weinkaemmerer, adapted to v20.3, v21.0 and v21.1  by Ivan Basic
-- passive tracer: it is possible to load a NetCDF with passive tracer ground fluxes (time,x,y,npt)
-- in init_terrain.F: more terrain choices and it is possible to load custom NetCDF with terrain (z,x,y)
-- init_surface.F: custom landuse index map by loading a NetCDF (x,y)
+This repository contains modified CM1 source in [`src/`](src/) and run scripts and inputs in [`RUN_CM1/`](RUN_CM1/). Start with the [run guide](RUN_CM1/README.md) before using the example configuration; its paths and domain settings are project specific.
 
-To quickly find the modifications, search "Ivan Basic" (or such) to see the changes.
+The source adds online time averages (`src/tmea.F`, developed by Jan Weinkaemmerer and adapted by Ivan Basic), passive tracer surface fluxes from `myflux.nc`, terrain from `myzs.nc`, and land use from `mylanduse.nc`, along with LES fixes. Search the source for `Ivan Basic` to locate many of these changes.
 
-To run with all settings, set the switches in the namelist.input:
-- iptra = 1 (or more)
-- dotmea = .true.
-- itern = 12
-- initsfc = 5
+For the supplied terrain and land-use inputs, set `terrain_flag = .true.`, `itern = 12`, and `initsfc = 5` in `namelist.input`. Passive tracers use `iptra = 1` and `npt`; online averages use `dotmea = .true.`, `tmeafrq`, and `tmeaperiod`. The [run guide](RUN_CM1/README.md#namelist-settings-to-check) explains the dependencies and the `iconly = 1` setup check. Build with NetCDF support when reading the custom NetCDF inputs; see [`src/Makefile`](src/Makefile).
 
-## RUN_CM1/
-- contains the scripts to run the simulation and/or to submit a recursive run utilising restarts (used for longer simulations).
-- see README on how to use it.
+The [input preparation guide](RUN_CM1/INPUT/prepare/README.md) covers generating terrain, land use, a vertical grid, a sounding, and tracer fluxes for a new domain.
 
-For any additional questions, fire an email to: basic@iau.uni-frankfurt.de
+For questions about these modifications: basic@iau.uni-frankfurt.de.

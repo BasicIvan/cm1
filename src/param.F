@@ -226,6 +226,7 @@
 708   continue
       rewind(20)
 
+      output_ptra = 1
       read(20,nml=param9,end=709)
 709   continue
       rewind(20)
@@ -456,6 +457,7 @@
       call MPI_BCAST(output_qv     ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(output_qvpert ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(output_q      ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(output_ptra   ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(output_n_as_m3,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(output_dbz    ,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(output_buoyancy,1,MPI_INTEGER,0,MPI_COMM_WORLD,ierr)
@@ -596,9 +598,10 @@
       call MPI_BCAST(dodomaindiag,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(diagfrq   ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
-      ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 broadcast TMEA settings
       call MPI_BCAST(dotmea    ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(tmeafrq   ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+      call MPI_BCAST(tmeaperiod,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
 
       call MPI_BCAST(doazimavg     ,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ierr)
       call MPI_BCAST(azimavgfrq    ,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
@@ -677,6 +680,25 @@
 !  Set constants:
 
       call set_constants( testcase )
+
+      ! Ivan Basic 2026-10-06 validate the optional TMEA window
+      IF( dotmea )THEN
+        IF( tmeaperiod.lt.0.0d0 )THEN
+          if(myid.eq.0) print *, 'tmeaperiod must be >= 0 (seconds).'
+          call stopcm1
+        ENDIF
+        IF( tmeaperiod.gt.0.0d0 )THEN
+          IF( tapfrq.le.0.0d0 .or. tmeaperiod.gt.tapfrq )THEN
+            if(myid.eq.0) print *, 'TMEA requires 0 < tmeaperiod <= tapfrq.'
+            call stopcm1
+          ENDIF
+          IF( tmeafrq.gt.tmeaperiod )THEN
+            if(myid.eq.0) print *, 'tmeafrq must not exceed tmeaperiod.'
+            call stopcm1
+          ENDIF
+        ENDIF
+        if(dowr) write(outfile,*) 'tmeaperiod = ',tmeaperiod
+      ENDIF
 
 !-----------------------------------------------------------------------
 !  Some "dummy" checks:
@@ -4666,6 +4688,7 @@
       output_qv      = max(0,min(1,output_qv))
       output_qvpert  = max(0,min(1,output_qvpert))
       output_q       = max(0,min(1,output_q))
+      output_ptra    = max(0,min(1,output_ptra))
       output_dbz     = max(0,min(1,output_dbz))
       output_buoyancy= max(0,min(1,output_buoyancy))
       output_u       = max(0,min(1,output_u))
@@ -4719,6 +4742,7 @@
         output_qv=0
         output_qvpert=0
         output_q=0
+        output_ptra=0
         output_dbz=0
         output_cape=0
         output_cin=0
@@ -4805,6 +4829,7 @@
       if(dowr) write(outfile,*) 'output_qv        =',output_qv
       if(dowr) write(outfile,*) 'output_qvpert    =',output_qvpert
       if(dowr) write(outfile,*) 'output_q         =',output_q
+      if(dowr) write(outfile,*) 'output_ptra      =',output_ptra
       if(dowr) write(outfile,*) 'output_dbz       =',output_dbz
       if(dowr) write(outfile,*) 'output_buoyancy  =',output_buoyancy
       if(dowr) write(outfile,*) 'output_u         =',output_u
@@ -4979,7 +5004,7 @@
         ker=1
       endif
       
-      !Ivan Basic Feb 2026: correct bounds for ibb,ieb,...keb. Previously they were 1, which returns error in restart writer
+      ! Ivan Basic 2026-02 correct restart-array bounds
       if( cm1setup.eq.1)then
         ! for LES
         ibb=ib
@@ -5314,7 +5339,8 @@
       td_melt  = 0
       td_frz   = 0
 
-      IF( output_thbudget.eq.1 .or.dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 enable budget for TMEA
+      IF( output_thbudget.eq.1 .or.dodomaindiag .or. dotmea )THEN
         ibdt = ib
         iedt = ie
         jbdt = jb
@@ -5455,6 +5481,7 @@
       qd_dep   = 0
       qd_subl  = 0
       !
+      ! Ivan Basic 2023-03-21 initialize TMEA diagnostics (following block)
       qcd_hadv  = 0
       qcd_vadv  = 0
       qcd_hturb = 0
@@ -5463,7 +5490,6 @@
       qcd_vidiff = 0
       qcd_mp    = 0
       qcd_pbl   = 0
-      ! Ivan Basic
 
       ! dbz (new for cm1r19)
       IF( output_dbz.eq.1 .or. restart_file_dbz .or. (imoist.eq.1.and.ptype.eq.3) )THEN
@@ -5510,7 +5536,8 @@
 
         endif
       ENDIF
-      IF( ( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea ) .and. imoist.eq.1 )THEN ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 enable budget for TMEA
+      IF( ( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea ) .and. imoist.eq.1 )THEN
         ibdq = ib
         iedq = ie
         jbdq = jb
@@ -5529,7 +5556,7 @@
 
         nqdiag = nqdiag + 1
         qcd_vadv = nqdiag
-        ! Ivan Basic 21.03.23.
+        ! Ivan Basic 2023-03-21 add TMEA diagnostic indices (following block)
         if( cm1setup.ge.1 .or. ipbl.ge.1 )then
           if(dohturb)then
             nqdiag = nqdiag + 1
@@ -5537,7 +5564,6 @@
             !
             nqdiag = nqdiag + 1
           	qcd_hturb = nqdiag
-          	! Ivan Basic 21.03.23.
           endif
           if(dovturb)then
             nqdiag = nqdiag + 1
@@ -5545,7 +5571,6 @@
             !
             nqdiag = nqdiag + 1
           	qcd_vturb = nqdiag
-          	! Ivan Basic 21.03.23.
           endif
         endif
 
@@ -5555,7 +5580,6 @@
           !
           nqdiag = nqdiag + 1
           qcd_hidiff = nqdiag
-          ! Ivan Basic 21.03.23.
         endif
 
         if( vadvordrs.eq.3 .or. vadvordrs.eq.5 .or. vadvordrs.eq.7 .or. vadvordrs.eq.9 .or. advwenos.ge.1 )then
@@ -5564,7 +5588,6 @@
           !
           nqdiag = nqdiag + 1
           qcd_vidiff = nqdiag
-          ! Ivan Basic 23.03.23.
         endif
 
         if( idiff.eq.1 )then
@@ -5583,7 +5606,6 @@
           !
           nqdiag = nqdiag + 1
           qcd_mp = nqdiag
-          ! Ivan Basic 21.03.23.
         endif
 
         if( testcase.eq.10 .or. do_lsnudge )then
@@ -5597,7 +5619,6 @@
           !
           nqdiag = nqdiag + 1
           qcd_pbl = nqdiag
-          ! Ivan Basic 21.03.23.
         endif
 
         if( dolsw )then
@@ -5642,7 +5663,8 @@
       ud_lsw     = 0
       nutk       = 0
 
-      IF( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 enable budget for TMEA
+      IF( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5747,7 +5769,8 @@
       vd_lsw     = 0
       nvtk       = 0
 
-      IF( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 enable budget for TMEA
+      IF( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5849,7 +5872,8 @@
       wd_buoy    = 0
       nwtk       = 0
 
-      IF( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 enable budget for TMEA
+      IF( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
         ! 170721: to more easily calculate rtke budget, save budget terms
 
         ibdv = ib
@@ -5929,7 +5953,8 @@
       kd_turb  = 0
 
       ! cm1r21.1: add idoles
-      IF( (idopbl.or.idoles) .and. iusetke )THEN ! Ivan Basic: .and. dodomaindiag
+      ! Ivan Basic 2023-03-21 enable TKE diagnostics
+      IF( (idopbl.or.idoles) .and. iusetke )THEN
 
         ibdk = ib
         iedk = ie

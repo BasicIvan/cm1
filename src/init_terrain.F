@@ -60,6 +60,7 @@
 
       ! DJK
       integer :: status, ncid, varid, dimid, mynx, myny
+      logical :: terrain_file_exists
 
 #ifdef MPI
       character(len=50) :: fname
@@ -189,38 +190,53 @@
 
           ! only processor 0 reads file:
 
+#ifdef NETCDF
           IF( myid.eq.0 )THEN
+            ! Ivan Basic 2026-07-27 validate required myzs input
+            inquire(file='myzs.nc',exist=terrain_file_exists)
+            IF( .not.terrain_file_exists )THEN
+              print *,'ERROR: itern=12 requires myzs.nc, but the file is missing.'
+              call stopcm1
+            ENDIF
+
               print *, 'reading terrain from myzs.nc...'
             status=nf90_open('myzs.nc', mode=nf90_nowrite , ncid=ncid)
-            status=nf90_inq_dimid(ncid,'nx', dimid)
+            call check_terrain_netcdf(status,'open myzs.nc')
+            status=nf90_inq_dimid(ncid,'nx',dimid)
+            call check_terrain_netcdf(status,'find dimension nx')
             status=nf90_inquire_dimension(ncid,dimid,len=mynx)
-            status=nf90_inq_dimid(ncid,'ny', dimid)
+            call check_terrain_netcdf(status,'read dimension nx')
+            status=nf90_inq_dimid(ncid,'ny',dimid)
+            call check_terrain_netcdf(status,'find dimension ny')
             status=nf90_inquire_dimension(ncid,dimid,len=myny)
+            call check_terrain_netcdf(status,'read dimension ny')
 
             print *, 'mynx, nx: ', mynx, nx
             print *, 'myny, ny: ', myny, ny
 
             if (mynx.ne.nx .or. myny.ne.ny) then
-              print *, 'status: ', status
-              print *, 'mynx does not equal nx or myny does not equal ny; stopping'
+              print *,'ERROR: myzs.nc dimensions do not match CM1.'
+              print *,'  file nx, ny  = ',mynx,myny
+              print *,'  model nx, ny = ',nx,ny
               call stopcm1
             end if
 
             status = nf90_inq_varid(ncid,'myzs',varid)
-            if (status /= nf90_noerr) then
-                    print *, 'error nf90_inq_varid'
-                    print *, 'status: ', status
-            endif
+            call check_terrain_netcdf(status,'find variable myzs')
             status = nf90_get_var(ncid,varid,zs_all)
-            if (status /= nf90_noerr) then
-                    print *, 'error nf90_get_var'
-                    print *, 'status: ', status
-            endif
+            call check_terrain_netcdf(status,'read variable myzs')
             status = nf90_close(ncid)
+            call check_terrain_netcdf(status,'close myzs.nc')
               print *, 'finished reading'
               print *, 'min, max:', minval(zs_all), maxval(zs_all)
               
           ENDIF
+#else
+          IF( myid.eq.0 )THEN
+            print *,'ERROR: itern=12 requires CM1 to be built with NetCDF support.'
+          ENDIF
+          call stopcm1
+#endif
 
 #ifdef MPI
           ! communicate data to all processors:
@@ -392,5 +408,20 @@
 
       end subroutine init_terrain
 
+#ifdef NETCDF
+      subroutine check_terrain_netcdf(status,operation)
+      use netcdf
+      implicit none
+
+      integer, intent(in) :: status
+      character(len=*), intent(in) :: operation
+
+      IF( status.ne.nf90_noerr )THEN
+        print *,'ERROR: failed to ',trim(operation),'.'
+        print *,'  NetCDF: ',trim(nf90_strerror(status))
+        call stopcm1
+      ENDIF
+      end subroutine check_terrain_netcdf
+#endif
 
   END MODULE init_terrain_module

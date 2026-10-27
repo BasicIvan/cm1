@@ -35,7 +35,8 @@
       use turb_module
       use statpack_module
       use writeout_module
-      use tmea_module ! Ivan Basic 19.01.23.
+      ! Ivan Basic 2023-01-19 integrate TMEA
+      use tmea_module
       use restart_write_module, only : restart_write
       use restart_read_module, only : restart_read
       use radiation_module, only : radiation_driver
@@ -49,7 +50,8 @@
       use ib_module
       use eddy_recycle
       use lsnudge_module
-      use myflux_module ! Ivan Basic: 06.11.2024.
+      ! Ivan Basic 2024-11-06 integrate myflux
+      use myflux_module
 #ifdef MPI
       use mpi
 #endif
@@ -253,9 +255,9 @@
       double precision, dimension(:,:,:,:), allocatable :: sfctavg
       real, dimension(:,:,:), allocatable :: sfctimavg
 
-      ! Ivan Basic 19.01.23.
+      ! Ivan Basic 2023-01-19
       integer :: ncalctm
-      double precision :: tmeatim
+      double precision :: tmeatim,time_left
       character(len=60), dimension(maxvars) :: desc_tmea
       character(len=40), dimension(maxvars) :: name_tmea,unit_tmea
       real, dimension(:,:,:), allocatable :: ulast,vlast,wlast,thlast
@@ -313,7 +315,8 @@
       nstatout=1
       nwrite = 1
       nwritet = 1
-      ncalctm = 1 ! Ivan Basic 19.01.23.
+      ! Ivan Basic 2023-01-19
+      ncalctm = 1
       nwritea = 1
       nwriteh = 1
       outfile=6
@@ -389,7 +392,8 @@
       dostat = .false.
       doprclout = .false.
       dotdwrite = .false.
-      dotmcalc = .false. ! Ivan Basic 19.01.23.
+      ! Ivan Basic 2023-01-19
+      dotmcalc = .false.
       doazimwrite = .false.
       dohifrqwrite = .false.
       dotbud = .true.
@@ -2244,8 +2248,8 @@
       allocate(  ptten(ibp:iep,jbp:jep,kbp:kep,npt) )
       ptten = 0.0
 
-      ! Ivan Basic:
-      call load_myflux()
+      ! Ivan Basic 2024-11-06 load myflux
+      if( iptra.eq.1 ) call load_myflux(npt,nx,ny)
 
 !----------------------------------------------------------------------
 !  arrays for cm1ib:
@@ -2535,8 +2539,7 @@
           call MPI_BARRIER (MPI_COMM_WORLD,ierr)
 #endif
 
-      ! Ivan Basic 19.01.23.
-      ! tmea
+      ! Ivan Basic 2023-01-19 set up TMEA
       call setup_tmea(name_tmea,desc_tmea,unit_tmea)
       allocate( tmea(ib:ie,jb:je,kb:ke,ntmea+ntmea2d) )
       tmea = 0.0
@@ -2789,7 +2792,7 @@
         diagtim = 1.0d60
       ENDIF
       
-      ! Ivan Basic 20.01.23.
+      ! Ivan Basic 2023-01-20 initialize TMEA timing
       IF( dotmea )THEN
         IF( restarted .and. tmeafrq.gt.1.0e-6 )THEN
           tmeatim = mtime + tmeafrq
@@ -3086,7 +3089,7 @@
           call   getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
-                          tmeatim,dotmcalc,												& ! Ivan Basic 20.01.23.
+                          tmeatim,dotmcalc,												& ! Ivan Basic 2023-01-20
                           hifrqtim,dohifrqwrite,.true.)
 
         endif
@@ -3138,8 +3141,10 @@
         dostat      = .true.
         dowriteout  = .true.
         doprclout   = .true.
-        dotdwrite   = .false.           ! Ivan Basic 18.11.22. (if .true., there is an error with terrain.)
-        dotmcalc    = .true. 			! Ivan Basic 20.01.23.
+        ! Ivan Basic 2022-11-18 avoid terrain error
+        dotdwrite   = .false.
+        ! Ivan Basic 2023-01-20
+        dotmcalc    = .true.
         doazimwrite = .true.
         dohifrqwrite = .true.
       ELSE
@@ -3171,7 +3176,8 @@
         dosolve = .false.
         if( doazimavg .and. nwritea.eq.1 ) doazimwrite = .true.
         if( dodomaindiag .and. nwritet.eq.1 ) dotdwrite = .true.
-        if( dotmea .and. ncalctm.eq.1 ) dotmcalc = .true. ! Ivan Basic 20.01.23.
+        ! Ivan Basic 2023-01-20
+        if( dotmea .and. ncalctm.eq.1 ) dotmcalc = .true.
         if( dohifrq .and. nwriteh.eq.1 ) dohifrqwrite = .true.
       ENDIF
 
@@ -3303,7 +3309,7 @@
           endif
         ENDIF
         
-        ! Ivan Basic 20.01.23.
+        ! Ivan Basic 2023-01-20 schedule TMEA
         IF( dotmea )THEN
           if( (mtime+dbldt).ge.(tmeatim-0.1*dt) .or. tmeafrq.le.0.0 )then
             dotmcalc = .true.
@@ -3328,24 +3334,25 @@
         dovbud = .false.
         dowbud = .false.
 
-        IF( dowriteout .or. dotdwrite .or. doazimwrite .or. dotmcalc )THEN ! Ivan Basic 23.01.23.
-          if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+        ! Ivan Basic 2023-01-23 enable budgets for TMEA (following block)
+        IF( dowriteout .or. dotdwrite .or. doazimwrite .or. dotmcalc )THEN
+          if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
             dotbud = .true.
             if(myid.eq.0) print *,'  dotbud = ',dotbud
           endif
-          if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
             doqbud = .true.
             if(myid.eq.0) print *,'  doqbud = ',doqbud
           endif
-          if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
             doubud = .true.
             if(myid.eq.0) print *,'  doubud = ',doubud
           endif
-          if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
             dovbud = .true.
             if(myid.eq.0) print *,'  dovbud = ',dovbud
           endif
-          if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 23.01.23.
+          if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
             dowbud = .true.
             if(myid.eq.0) print *,'  dowbud = ',dowbud
           endif
@@ -3458,7 +3465,7 @@
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,               &
                    dotmcalc,doazimwrite,dorestart,					 &
-                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 20.01.23.)
+                   ulast,vlast,wlast,thlast,qlast) ! Ivan Basic 2023-01-20
         ! end_solve2
 
 
@@ -3875,7 +3882,7 @@
           call   getnewdt(ndt,dt,dtlast,adt,acfl,dbldt,                                 &
                           mtime,stattim,taptim,rsttim,prcltim,diagtim,azimavgtim,       &
                           dorestart,dowriteout,dostat,doprclout,dotdwrite,doazimwrite,  &
-                          tmeatim,dotmcalc,												& ! Ivan Basic 20.01.23.
+                          tmeatim,dotmcalc,												& ! Ivan Basic 2023-01-20
                           hifrqtim,dohifrqwrite,.false.)
 
         ENDIF
@@ -3965,12 +3972,16 @@
 110       format(2x,i12,4x,f18.6,a5)
         endif
 
-      !Ivan Basic 27.03.23.
+      ! Ivan Basic 2023-03-27 calculate TMEA
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       !cccccccccccccccccccccccccccccccccccccccccccccccccccccccc!
       IF( dotmea )THEN
         if( dotmcalc )then
+
+          ! Ivan Basic 2026-10-06 average only within the pre-output window
+          time_left = taptim-mtime
+          IF( tmeaperiod.le.0.0d0 .or. time_left.le.tmeaperiod )THEN
 
           call calc_tke_sg(tke_sg,ust,znt,kmv,defv,defh,thflux,rth0s, &
                             qvflux,khv,nm,dissten,kdiag)
@@ -3980,7 +3991,7 @@
           !               qa,ua,va,wa,tkea,khh,khv,thflux,qvflux,t13,lenscl, &
           !               sigma,sigmaf,rds,rdsf,gz,gzu,gzv,gxu,gyv,rgz,uf,vf, &
           !               udiag,vdiag,wdiag)
-          ! Ivan Basic 16.04.2024.: +".or.restarted"
+          ! Ivan Basic 2024-04-16 handle restarted runs
           if( startup.or.restarted )then
             call calc_tmea(ncalctm,mtime,dbldt,name_tmea,rf, &
                             mf,tmea,tke_sg,hpbl,th0,tha,prs,rho, &
@@ -3997,6 +4008,8 @@
           endif
           ! end tmea
           ncalctm = ncalctm+1
+          ENDIF
+          ! Advance the existing sample clock even outside the averaging window.
           if(tmeafrq.gt.0.0)then
             doit = .true.
             do while( doit )
@@ -4010,7 +4023,6 @@
 		!print *,'if dotmcalc is done.'
         endif
       ENDIF
-	 !print *,'Ivan: calc_tke_sg and calc_tmea done...'
 !      if( restarted )then
 !        nwrite = nwrite-1
 !        taptim = taptim-tapfrq
@@ -4045,7 +4057,7 @@
           call          writeout(frec,urec,vrec,wrec,mrec,rtime,dt,fnum,nwrite,qname,qunit,    &
                         nstep,mtime,adt,ndt,domainlocx,domainlocy,                             &
                         name_output,desc_output,unit_output,grid_output,levs_output,cmpr_output, &
-                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 24.01.23.
+                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 2023-01-24
                         xh,xf,uf,yh,yf,vf,xfref,yfref,                                         &
                         rds,sigma,rdsf,sigmaf,zh,zf,mf,gx,gy,wprof,                            &
                         pi0,prs0,rho0,rr0,rf0,rrf0,th0,qv0,u0,v0,thv0,rth0,qc0,qi0,            &
@@ -4073,7 +4085,7 @@
                         edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc,                       &
                         vdfg,maxmf,nupdraft,ktop_plume,                                        &
                         dat1,dat2,dat3,reqt,thten1(ib,jb,1),dumk1,dumk2,                       &
-                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 24.01.23.
+                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 2023-01-24
                         bndy,kbdy,hflxw,hflxe,hflxs,hflxn,recy_cap,recy_inj,timavg,sfctimavg,kmwk, &
                         thcuten,qvcuten,qccuten,qicuten,ucuten,vcuten,                         &
                         nw1,nw2,ne1,ne2,sw1,sw2,se1,se2,myi1p,myi2p,myj1p,myj2p)
@@ -4098,7 +4110,7 @@
             endif
           enddo
         endif
-        ! Ivan Basic 27.03.23.
+        ! Ivan Basic 2023-03-27 reset TMEA
         ncalctm = 1
         tmea = 0.0
         if(myid.eq.0) print *,'  next taptim = ',taptim
@@ -4483,7 +4495,8 @@
         dowriteout  = .false.
         doprclout   = .false.
         dotdwrite   = .false.
-        dotmcalc    = .false. ! Ivan Basic 27.03.23.
+        ! Ivan Basic 2023-03-27
+        dotmcalc    = .false.
         doazimwrite = .false.
         dohifrqwrite = .false.
 
@@ -4830,7 +4843,7 @@
           call MPI_IRECV(doit,1,mpi_logical,n,999,MPI_COMM_WORLD,reqs,ierr)
           call MPI_WAIT(reqs,status,ierr)
           !print *,'Program terminated normally:  myid=',n 
-          !Ivan Basic 24.10.2024.: "just to shorten the runlog."
+          ! Ivan Basic 2024-10-24 reduce run-log output
         enddo
         call MPI_FINALIZE(rc)
       else
@@ -4867,4 +4880,3 @@
       call stopcm1
 
       end program cm1
-

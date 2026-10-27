@@ -20,7 +20,7 @@
              subroutine writeout(srec,urec,vrec,wrec,mrec,rtime,dt,fnum,nwrite,qname,qunit,    &
                         nstep,mtime,adt,ndt,domainlocx,domainlocy,                             &
                         name_output,desc_output,unit_output,grid_output,levs_output,cmpr_output, &
-                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 24.01.23.
+                        name_tmea,desc_tmea,unit_tmea,										   & ! Ivan Basic 2023-01-24
                         xh,xf,uf,yh,yf,vf,xfref,yfref,                                         &
                         rds,sigma,rdsf,sigmaf,zh,zf,mf,gx,gy,wprof,                            &
                         pi0,prs0,rho0,rr0,rf0,rrf0,th0,qv0,u0,v0,thv0,rth0,qc0,qi0,            &
@@ -48,7 +48,7 @@
                         edmf_a,edmf_w,edmf_qt,edmf_thl,edmf_ent,edmf_qc,                       &
                         vdfg,maxmf,nupdraft,ktop_plume,                                        &
                         dat1,dat2,dat3,reqt,dum2d          ,dumk1,dumk2,                       &
-                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 24.01.23.
+                        tdiag,qdiag,udiag,vdiag,wdiag,pdiag,tmea,out2d,out3d,cir,crr,cangle,   & ! Ivan Basic 2023-01-24
                         bndy,kbdy,hflxw,hflxe,hflxs,hflxn,recy_cap,recy_inj,timavg,sfctimavg,kmwk, &
                         thcuten,qvcuten,qccuten,qicuten,ucuten,vcuten,                         &
                         nw1,nw2,ne1,ne2,sw1,sw2,se1,se2,myi1p,myi2p,myj1p,myj2p)
@@ -194,7 +194,7 @@
       real, intent(inout), dimension(kmt) :: nw1,nw2,ne1,ne2,sw1,sw2,se1,se2
       integer, intent(in), dimension(numprocs) :: myi1p,myi2p,myj1p,myj2p
 
-      ! Ivan Basic 24.01.23. These are declared as (in) variables only.
+      ! Ivan Basic 2023-01-24 add TMEA metadata
       character(len=60), intent(in), dimension(maxvars) :: desc_tmea
       character(len=40), intent(in), dimension(maxvars) :: name_tmea,unit_tmea
       real, intent(in), dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d) :: tmea
@@ -364,10 +364,10 @@
 
     ! 2d s-staggered variables:
 
-    ! Ivan Basic, 23.01.23:
+    ! Ivan Basic 2023-01-23 select TMEA output (disabled block)
     !write_tmea = .false.
     !do ntmea_write = 1, ntmea2d
-    !    if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then !Ivan Basic 29.03.23. n_out -> nloop
+    !    if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then
     !    	write_tmea = .true.
     !        exit
     !    endif
@@ -3141,7 +3141,7 @@
 
     ENDIF
 
-	! Ivan Basic 24.01.23.
+	! Ivan Basic 2023-01-24 write 2-D TMEA fields
     IF( dotmea )then
       do n = 1, ntmea2d
         n_out = n_out + 1
@@ -3211,7 +3211,7 @@
     ! 3d s-staggered variables:
 
   !.............................................
-  	! Ivan Basic 06.02.23.
+  	! Ivan Basic 2023-02-06 select TMEA output (disabled block)
   	!write_tmea = .false.
     !    do ntmea_write = 1+ntmea2d, ntmea+ntmea2d
     !      if ( trim(name_output(nloop)).eq.trim(name_tmea(ntmea_write)) ) then
@@ -3501,7 +3501,7 @@
 
   !.............................................
 
-    if(iptra         .eq.1)then
+    if(iptra.eq.1 .and. output_ptra.eq.1)then
 
       do n=1,npt
 
@@ -6801,7 +6801,7 @@
         call   writes(dum1,fnum,srec,nwrite,nloop,dat1,dat2,dat3,reqt,myi1p,myi2p,myj1p,myj2p,ncid,time_index,name_output(n_out),levs_output(n_out),sigma,zs,zh,dum9)
       ENDIF
 
-    ! Ivan Basic 24.01.23.
+    ! Ivan Basic 2023-01-24 write 3-D TMEA fields
     IF( dotmea ) then   
       do n = 1+ntmea2d, ntmea+ntmea2d
         n_out = n_out + 1

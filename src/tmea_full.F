@@ -1,8 +1,8 @@
       MODULE tmea_module
 
 !-----------------------------------------------------------------------------
-!  Ivan Basic 16.03.23. added this to src folder
 !  tmea_module, Jan Weinkaemmerer, 2019/20
+! Ivan Basic 2023-03-16 integrate and extend module
 !   
 !  For on-the-fly time averaging between two outputs. See tmeafrq in namelist
 !  to set the summation frequency.
@@ -117,27 +117,28 @@
           !ntmea = ntmea + 1
           !name_tmea(ntmea+ntmea2d) = 'pt1_TM'
           !desc_tmea(ntmea+ntmea2d) = 'passive tracer time-averaged (CO2)'
-          !unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 04.08.2023.
+          !unit_tmea(ntmea+ntmea2d) = 'kg/kg'
           
+          ! Ivan Basic 2024-11-27 add tracer diagnostics (following block)
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'pt1_TM'
           desc_tmea(ntmea+ntmea2d) = 'Gross primary product (CO2) - tmea'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 27.11.2024.
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
           
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'pt2_TM'
           desc_tmea(ntmea+ntmea2d) = 'Respiration (CO2) - tmea'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 27.11.2024.
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
           
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'pt3_TM'
           desc_tmea(ntmea+ntmea2d) = 'Anthropogenic sources (CO2) - tmea'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 27.11.2024.
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
           
           ntmea = ntmea + 1
           name_tmea(ntmea+ntmea2d) = 'pt4_TM'
           desc_tmea(ntmea+ntmea2d) = 'Anthropogenic sources (CH4) - tmea'
-          unit_tmea(ntmea+ntmea2d) = 'kg/kg' ! Ivan Basic 27.11.2024.
+          unit_tmea(ntmea+ntmea2d) = 'kg/kg'
           
         endif
 
@@ -177,7 +178,8 @@
         character(len=40), dimension(maxvars), intent(in) :: name_tmea
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: rf,lenscl
         real, dimension(ib:ie,jb:je,kb:ke+1), intent(in) :: mf
-        real, dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d), intent(inout):: tmea !Ivan Basic Feb 2026: added "+ntmea2d"
+        ! Ivan Basic 2026-02 include 2-D diagnostics
+        real, dimension(ib:ie,jb:je,kb:ke,ntmea+ntmea2d), intent(inout):: tmea
         real, dimension(ib:ie,jb:je,kb:ke+1,5), intent(in) :: tke_sg
         real, dimension(ibl:iel,jbl:jel), intent(in) :: hpbl
         real, dimension(ib:ie,jb:je,kb:ke), intent(in) :: th0,tha,prs,rho,t13
@@ -580,7 +582,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,1)+pta(i,j,k+1,1)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023.
+              ! Ivan Basic 2023-08-04
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,1)+pta(i,j,k+1,1)) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -591,7 +594,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,2)+pta(i,j,k+1,2)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 04.08.2023., 21.09.2023.
+              ! Ivan Basic 2023-09-21
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,2)+pta(i,j,k+1,2)) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -602,7 +606,8 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,3)+pta(i,j,k+1,3)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
+              ! Ivan Basic 2024-11-27 (following block)
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,3)+pta(i,j,k+1,3)) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -613,7 +618,7 @@
             do k=1,maxk
             do j=1,nj
             do i=1,ni
-              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,4)+pta(i,j,k+1,4)) - tmea(i,j,k,n) )/dble(ncalctm) ! Ivan Basic 27.11.2024
+              tmea(i,j,k,n) = tmea(i,j,k,n) + ( 0.5*(pta(i,j,k,4)+pta(i,j,k+1,4)) - tmea(i,j,k,n) )/dble(ncalctm)
             enddo
             enddo
             enddo
@@ -1791,7 +1796,8 @@
                   z_t = zh(i,j,k)
                 endif
               enddo
-              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then !Ivan Basic 28.03.23.
+              ! Ivan Basic 2023-03-28
+              if ( qa(i,j,maxk,nqc).gt.0.0001 ) then
                 z_t = zh(i,j,maxk)
                 zmin = z_b + (z_t-z_b)/4.0
               endif
@@ -2327,5 +2333,3 @@
       end subroutine getavgy
 
       END MODULE tmea_module
-
-

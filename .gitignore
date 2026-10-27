@@ -1,5 +1,4 @@
 RUN_CM1/INPUT/*.nc
-RUN_CM1/INPUT/1*
 RUN_CM1/INPUT/2*
 RUN_CM1/INPUT/3*
 RUN_CM1/INPUT/4*
@@ -11,7 +10,8 @@ src/libs/*
 *.swp
 *.swo
 .DS_Store
-
+*.nc
 # optional: vim temp files
 .*.swp
 .*.swo
+/RUN_CM1/INPUT/0input_sets/

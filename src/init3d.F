@@ -334,15 +334,11 @@
         if(n.eq.1)then
         !gpp CO2
           pta(i,j,k,n)=0.00041
-          !pta(i,j,k,n)=0.0000
-          !if(zh(i,j,k).lt.100.0) pta(i,j,k,n)=0.00041*44/29 ! conversion from ppm to kg/kg. mol mass of CO2 / mol mass of dry air. Ivan Basic (13.09.2022)
-          !if(zh(i,j,k).lt.100.0.and.xh(i,j,k).lt.50.and.xh(i,j,k).gt.-50.and.yh(i,j,k).lt.50.and.yh(i,j,k).gt.-50) pta(i,j,k,n)=0.41 !Ivan Basic (12.09.2022)
         endif
         if(n.eq.2)then
         !resp CO2
           pta(i,j,k,n)=0.00041
           !if(zh(i,j,k).gt.3000.0.and.zh(i,j,k).lt.6000.0) pta(i,j,k,n)=0.0001
-          !if(zh(i,j,k).lt.400.0) pta(i,j,k,n)=0.000002*16/29
         endif
         if(n.eq.3)then
           ! anthro CO2
@@ -350,7 +346,18 @@
           !if(zh(i,j,k).gt.6000.0.and.zh(i,j,k).lt.9000.0) pta(i,j,k,n)=0.0001
         endif
         if(n.eq.4)then
-                pta(i,j,k,n) = 0.000
+          ! CH4
+          pta(i,j,k,n) = 0.0
+        endif
+        if(n.eq.5)then
+          ! tracer with constant flux
+        		pta(i,j,k,n) = 0.0
+        endif
+        if(n.eq.6)then
+          ! tropospheric tracer (= 10 ppm)
+        		if(zh(i,j,k).gt.2000.0) then
+        			pta(i,j,k,n) = 0.000010
+        		endif
         endif
       enddo
       enddo

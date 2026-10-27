@@ -112,7 +112,7 @@
                    timavg,                                           &
                    dowriteout,dorad,getdbz,getvt,dotdwrite,          &
                    dotbud,doqbud,doubud,dovbud,dowbud,donudge,       &
-                   dotmcalc,doazimwrite,dorestart) ! Ivan Basic 23.01.23.
+                   dotmcalc,doazimwrite,dorestart) ! Ivan Basic 2023-01-23
         ! end_solve1
       use input
       use constants
@@ -123,7 +123,7 @@
       use simple_phys_module, only : testcase_simple_phys,get_avg_uvt,get_avg_uvtq
       use eddy_recycle
       use lsnudge_module
-      ! Ivan Basic 15.10.2024.: add this routine so the netcdf file loading works:
+      ! Ivan Basic 2024-10-15 integrate myflux
       use myflux_module
 #ifdef NETCDF
       use netcdf
@@ -214,12 +214,14 @@
 
       real, intent(in), dimension(ibta:ieta,jbta:jeta,kbta:keta,ntavr) :: timavg
 
-      logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart ! Ivan Basic 23.01.23.
+      ! Ivan Basic 2023-01-23
+      logical, intent(in) :: dowriteout,dorad,dotdwrite,dotmcalc,doazimwrite,dorestart
       logical, intent(inout) :: getdbz,getvt,dotbud,doqbud,doubud,dovbud,dowbud,donudge
 !-----------------------------------------------------------------------
 ! Arrays and variables defined inside solve
 
-      integer :: i,j,k,n,nrk,bflag,pdef,diffit,k1,k2,ii,jj,ip ! Ivan Basic: added 'jj'
+      ! Ivan Basic 2024-10-28
+      integer :: i,j,k,n,nrk,bflag,pdef,diffit,k1,k2,ii,jj,ip
       integer :: has_reqc,has_reqi,has_reqs,do_radar_ref,ke_diag
 
       real :: delqv,delpi,delth,delt,fac,epsd,dheat,dz1,xs
@@ -241,17 +243,20 @@
       integer :: reqp1,reqp2
 #endif
       
-! Ivan Basic 28.10.2024:
+! Ivan Basic 2024-10-28 add varying tracer fluxes
 ! *************** 		ptflux calculation		 ********************
       real, dimension(ib:ie,jb:je,npt) :: ptflux ! dimensions: x,y,npt
       integer :: index1, index2 ! time index
       real :: weight, fluxtau ! fluxtau is the time step in myflux.nc, in seconds.
-      ! myflux_loaded thing was added in Feb 2026. check myflux.F too. 
-      ! default value:
-        ptflux(:,:,:) = 1.0e-9
+      ! Ivan Basic 2026-02 allow fallback without myflux.nc
+      ptflux(:,:,:) = 1.0e-9 ! default value
+      ! Ivan Basic 2026-05-11 add fixed-flux tracers (following block)
+      if( npt.ge.5 ) ptflux(:,:,5) = 1.1e-7 ! tracer with constant flux
+      if( npt.ge.6 ) ptflux(:,:,6) = 0.0    ! tropospheric tracer
       if (myflux_loaded) then
+      ! Ivan Basic 2026-07-27 use requested subset of file tracers
       ! Determine the time index based on mtime by interpolating between two times
-      fluxtau = 3600.0d0
+      fluxtau = 3600.0
       index1 = int(mtime * 0.99 / fluxtau) + 1 ! *0.99 is here to avoid the last index
       index1 = max(1, min(index1, ptnt-1))
       index2 = index1 + 1
@@ -262,8 +267,7 @@
           do ii=1,nx
           	i = ii - myi1 + 1
           	j = jj - myj1 + 1
-        	!j = ny - jj + 1 - myj1 + 1  ! no reversing here!
-        	!myflux: (npt,nt,ny,nx)
+        	! myflux: (npt,nt,ny,nx)
         		! Check if this processor has this grid point:
         		IF (i >= ib .AND. i <= ie .AND. j >= jb .AND. j <= je) THEN
             		ptflux(i,j,n) = (1.0 - weight) * myflux(n,index1,ii,jj) + weight * myflux(n,index2,ii,jj)
@@ -292,26 +296,26 @@
       dovbud = .false.
       dowbud = .false.
 
-	  !Ivan Basic 06.02.23
+	  ! Ivan Basic 2023-02-06 enable budgets for TMEA (following block)
       ! Do the budgets for online time averaging, too. Budgets have to be prepared in param.F.
-      IF( dowriteout .or. dotdwrite .or. dotmcalc )THEN ! Ivan Basic 06.02.23
-        if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+      IF( dowriteout .or. dotdwrite .or. dotmcalc )THEN
+        if( output_thbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
           dotbud = .true.
           if(myid.eq.0) print *,'  dotbud = ',dotbud
         endif
-        if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_qvbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
           doqbud = .true.
           if(myid.eq.0) print *,'  doqbud = ',doqbud
         endif
-        if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_ubudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
           doubud = .true.
           if(myid.eq.0) print *,'  doubud = ',doubud
         endif
-        if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_vbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
           dovbud = .true.
           if(myid.eq.0) print *,'  dovbud = ',dovbud
         endif
-        if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN ! Ivan Basic 06.02.23
+        if( output_wbudget.eq.1 .or. dodomaindiag .or. dotmea )THEN
           dowbud = .true.
           if(myid.eq.0) print *,'  dowbud = ',dowbud
         endif
@@ -415,7 +419,8 @@
         if(timestats.ge.1) time_turb=time_turb+mytime()
 
         !if( dotdwrite .and. kd_turb.ge.1 )then 
-        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
+        ! Ivan Basic 2023-01-23
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1
@@ -438,7 +443,8 @@
       endif
 
         !if( dotdwrite .and. kd_turb.ge.1 )then 
-        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then ! Ivan Basic 23.01.23.
+        ! Ivan Basic 2023-01-23
+        if( (dotdwrite .or. dotmcalc) .and. kd_turb.ge.1 )then
           !$omp parallel do default(shared)  &
           !$omp private(i,j,k)
           do k=1,nk+1
@@ -1300,8 +1306,7 @@
         IF(iptra.eq.1)THEN
         
           ! passive tracers: 
-          !Ivan Basic: set the 1st parameter from 0 to 1 (call turbs(1,...)). June 2022
-          !Ivan Basic: replaced qvflux with the custom "ptflux" (call turbs(...,qvflux,...)). June 2022
+          ! Ivan Basic 2022-06 apply custom fluxes to passive tracers
           do n=1,npt
             call turbs(1,dt,dosfcflx,xh,rxh,arh1,arh2,uh,xf,arf1,arf2,uf,vh,vf,ptflux(:,:,n),   &
                        rds,sigma,rdsf,sigmaf,mh,mf,gz,rgz,gzu,rgzu,gzv,rgzv,gx,gxu,gy,gyv, &

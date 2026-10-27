@@ -2391,7 +2391,7 @@ contains
  
                !stop 'MCICA_SUBCOL: KISSVEC SEED GENERATOR REQUIRES PMID FROM BOTTOM FOUR LAYERS.'
             !endif 
-            ! Ivan Basic: to stop errors
+            ! Ivan Basic 2024 avoid invalid seeds
             seed1(i) = (pmid(i,1) - int(pmid(i,1)))  * 1000000000_im
             seed2(i) = (pmid(i,2) - int(pmid(i,2)))  * 1000000000_im
             seed3(i) = (pmid(i,3) - int(pmid(i,3)))  * 1000000000_im
@@ -11848,9 +11848,9 @@ CONTAINS
 
 ! Added for top of model adjustment.  Steven Cavallo NCAR/MMM December 2010
     INTEGER, PARAMETER :: nproflevs = 60 ! Constant, from the table
-    INTEGER :: L, LL, klev               ! Loop indices      
+    INTEGER :: L, LL, klev, nbuf         ! Loop indices      
     REAL, DIMENSION( kts:nlayers+1 ) :: varint
-    REAL :: wght,vark,vark1,tem1,tem2,tem3
+    REAL :: wght,vark,vark1,tem1,tem2,tem3,ptop_col
     REAL :: PPROF(nproflevs), TPROF(nproflevs)            
     ! Weighted mean pressure and temperature profiles from midlatitude 
     ! summer (MLS),midlatitude winter (MLW), sub-Arctic 
@@ -12313,10 +12313,20 @@ CONTAINS
 !  column pressure.  Mixing ratios are held constant except for ozone.  
 !  Caution should be used if model top pressure is less than 5 hPa.
 !  Steven Cavallo, NCAR/MMM, December 2010
-       ! Calculate the column pressure buffer levels above the 
-       ! model top       
+       ! Calculate the column pressure buffer levels above the model top.
+       ! Use the current column-top pressure so terrain/pressure
+       ! perturbations cannot make the fixed buffer extend below zero.
+       nbuf = nlayers - kte
+       if( nbuf .gt. 0 )then
+          if( .not. ( plev(ncol,kte+1) .gt. 0.0 ) )then
+             write(*,*) 'RRTMG_LWRAD: bad model-top pressure ',   &
+                         i,j,plev(ncol,kte+1)
+             stop 12318
+          endif
+          ptop_col = plev(ncol,kte+1)
+       endif
        do L=kte+1,nlayers,1
-          plev(ncol,L+1) = plev(ncol,L) - deltap
+          plev(ncol,L+1) = ptop_col*real(nlayers-L)/real(nbuf)
           play(ncol,L) = 0.5*(plev(ncol,L) + plev(ncol,L+1))
 ! Fill in height array above model top to top of atmosphere using
 ! dz from model top layer for completeness, though this information is not
@@ -12329,8 +12339,12 @@ CONTAINS
        ! levels.  If zero happened to be the top level already,
        ! this will add another level with zero, but will not affect
        ! the radiative transfer calculation.
-       plev(ncol,nlayers+1) = 0.00
-       play(ncol,nlayers) =  0.5*(plev(ncol,nlayers) + plev(ncol,nlayers+1))
+       if( nbuf .gt. 0 )then
+          plev(ncol,nlayers+1) = 0.00
+          play(ncol,nlayers) =  max( 1.0e-6 ,                    &
+                                      0.5*(plev(ncol,nlayers)     &
+                                      + plev(ncol,nlayers+1)) )
+       endif
 
        ! Interpolate the table temperatures to column pressure levels    
        do L=1,nlayers+1,1

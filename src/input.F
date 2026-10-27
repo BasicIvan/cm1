@@ -36,7 +36,7 @@
               restart_file_qv0,restart_file_u0,restart_file_v0,               &
               restart_file_zs,restart_file_zh,restart_file_zf,                &
               restart_file_diags,restart_use_theta,restart_reset_frqtim,      &
-              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & ! Ivan Basic 23.01.23.
+              dolsw,dodomaindiag,dotmea,doazimavg,dohifrq,dohturb,dovturb,pdcomp,    & ! Ivan Basic 2023-01-23
               use_pbl,use_avg_sfc,dot2p,iusetke,do_adapt_move,                &
               bl_mynn_tkeadvect,idoles,idopbl,dotimeavg,interp_on_restart,    &
               do_recycle_w,do_recycle_s,do_recycle_e,do_recycle_n,            &
@@ -114,7 +114,7 @@
               output_zh,output_th,output_thpert,output_prs,output_prspert,    &
               output_pi,output_pipert,output_rho,output_rhopert,output_tke,   &
               output_km,output_kh,                                            &
-              output_qv,output_qvpert,output_q,output_dbz,output_buoyancy,    &
+              output_qv,output_qvpert,output_q,output_ptra,output_dbz,output_buoyancy, &
               output_u,output_upert,output_uinterp,                           &
               output_v,output_vpert,output_vinterp,output_w,output_winterp,   &
               output_vort,output_pv,output_uh,output_pblten,                  &
@@ -165,8 +165,9 @@
               nutk,nvtk,nwtk,                                                 &
               ntim,ntavr,utav,vtav,wtav,ttav,qtav,etav,uutav,vvtav,           &
               nsfctavr,les_subdomain_shape,ib_init,	                      &
-              qcd_hadv,qcd_vadv,qcd_hturb,qcd_vturb,qcd_hidiff,qcd_vidiff,    & ! Ivan Basic 23.01.23. for tmea diagnostics
-              qcd_mp,qcd_pbl                                                    ! Ivan Basic 23.01.23. for tmea diagnostics
+              ! Ivan Basic 2023-01-23 add TMEA diagnostics (following block)
+              qcd_hadv,qcd_vadv,qcd_hturb,qcd_vturb,qcd_hidiff,qcd_vidiff,    &
+              qcd_mp,qcd_pbl
               
 !-----------------------------------------------------------------------
 
@@ -212,7 +213,10 @@
 !-----------------------------------------------------------------------
 
       double precision ::                                                     &
-           tapfrq,rstfrq,statfrq,prclfrq,diagfrq,tmeafrq,azimavgfrq,hifrqfrq ! Ivan Basic 23.01.23.
+           tapfrq,rstfrq,statfrq,prclfrq,diagfrq,tmeafrq,azimavgfrq,hifrqfrq ! Ivan Basic 2023-01-23
+
+      ! Ivan Basic 2026-10-06 optional averaging window before each output (s)
+      double precision :: tmeaperiod = 0.0d0
 
 !-----------------------------------------------------------------------
 
@@ -296,7 +300,7 @@
               output_th,output_thpert,output_prs,output_prspert,              &
               output_pi,output_pipert,output_rho,output_rhopert,output_tke,   &
               output_km,output_kh,                                            &
-              output_qv,output_qvpert,output_q,output_dbz,output_buoyancy,    &
+              output_qv,output_qvpert,output_q,output_ptra,output_dbz,output_buoyancy, &
               output_u,output_upert,output_uinterp,                           &
               output_v,output_vpert,output_vinterp,output_w,output_winterp,   &
               output_vort,output_pv,output_uh,output_pblten,                  &
@@ -334,7 +338,7 @@
               prcl_km,prcl_kh,prcl_tke,prcl_dbz,prcl_b,prcl_vpg,prcl_vort,    &
               prcl_rho,prcl_qsat,prcl_sfc
       namelist /param14/                                                      &
-              dodomaindiag,diagfrq,dotmea,tmeafrq ! Ivan Basic 24.01.23.
+              dodomaindiag,diagfrq,dotmea,tmeafrq,tmeaperiod
       namelist /param15/                                                      &
               doazimavg,azimavgfrq,rlen,do_adapt_move,adapt_move_frq
       namelist /param17/                                                      &
