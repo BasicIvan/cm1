@@ -1,0 +1,13 @@
+gridtype = generic
+xsize = 1200
+ysize = 1200
+xname = xh
+xlongname = x-coordinate
+xunits = m
+yname = yh
+ylongname = y-coordinate
+yunits = m
+xfirst = -14987.5
+xinc = 25
+yfirst = -14987.5
+yinc = 25

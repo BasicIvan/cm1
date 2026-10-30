@@ -1,0 +1,76 @@
+#!/bin/bash
+#*********************************************************
+# Julian Quimbayo Mars 2022
+# Script to compile CM1 in DKRZ-Levante
+#*********************************************************
+
+#*********************************************************
+# Steps::
+# 1. Download the code:
+# One needs to download the code in here:
+# https://www2.mmm.ucar.edu/people/bryan/cm1/getcode.html
+# 2. untar the downloaded file.
+# 3. Keep this helper under scripts/ in the CM1 checkout.
+# 4. The cm1_folder variable defaults to the parent of scripts/.
+#    Override it before sourcing if building another checkout.
+# 5. Save the modifications.
+# 6. Modify the file $cm1_folder/src/Makefile
+# - Allow Netcdf: Uncomment lines 11,12,13 and 14
+# - Add flags: Add this flag: -Wl,-rpath,$(NETCDF)/lib to OUTPUTLIB.
+# - Compiler selection: Uncomment lines 38,39,40 and 41
+# 7. From the repository root: source scripts/compile.cm1.levante
+# 8. To run the code, see RUN_CM1/README.md
+#*********************************************************
+
+#-- Locate the checkout independently of the current working directory.
+export cm1_folder="${cm1_folder:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
+cd "$cm1_folder" || return 1
+
+#*********************************************************
+#-- DO NOT MAKE ANY CHANGE FROM HERE ON!!!!
+#-- Purge the loaded modules
+module purge
+
+#-- Loading the modules
+module load openmpi/4.1.2-intel-2021.5.0
+module load intel-oneapi-compilers/2022.0.1-gcc-11.2.0
+module load netcdf-c/4.8.1-intel-2021.5.0
+module load netcdf-fortran/4.5.3-intel-2021.5.0
+
+#-- Configuring Netcdf
+export NETCDF_C=/sw/spack-levante/netcdf-c-4.8.1-f7hh57
+export NETCDF_F=/sw/spack-levante/netcdf-fortran-4.5.3-pvmcx6
+
+#-- Compiling both Netcdf-c and Netcdf-fortran together
+if [ -d "./libs/netcdf_all" ] 
+then
+	echo "Netcdf directory exists"  
+else
+       	mkdir ./libs
+	mkdir ./libs/netcdf_all
+	mkdir ./libs/netcdf_all/bin
+	mkdir ./libs/netcdf_all/lib
+	mkdir ./libs/netcdf_all/include
+fi
+
+cd ./libs/netcdf_all/bin
+ln -sf $NETCDF_C/bin/* .
+ln -sf $NETCDF_F/bin/* .
+
+cd ../include
+ln -sf $NETCDF_C/include/* .
+ln -sf $NETCDF_F/include/* .
+
+cd ../lib
+ln -sf $NETCDF_C/lib/* .
+ln -sf $NETCDF_F/lib/* .
+
+cd "$cm1_folder"
+
+export NETCDF="$cm1_folder/libs/netcdf_all"
+
+cd src
+
+make -j20
+
+ls -lth ../run

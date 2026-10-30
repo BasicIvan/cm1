@@ -1,15 +1,19 @@
-# directories
-MODEL=/work/bb1096/b381871/cm1/cm1r21.1/run/cm1.exe
-OUTPUT=/work/bb1096/b381871/les_output/swiss_midlands_2026
-# MPI
+# Paths: the run directory is output_root/case_name.
+model_executable=/work/bb1096/b381871/cm1/cm1r21.1/run/cm1.exe
+output_root=/work/bb1096/b381871/les_output/swiss_midlands_2026
+
+# Slurm resources and process stack limit (KiB).
 nodes=32
-tasks_per_node=128
-stacksize=10240000     # Set stack size (10 GB)
-# OpenMP
+mpi_ranks_per_node=128
+stack_size_kib=10240000
+# CPU cores allocated per MPI rank; the supplied setup uses pure MPI.
 cpus_per_task=1
 
-# job paramaters
-jobname=LES12p5_newdomain_iconly
-time=01:00:00
-run_time=7200.0
-num_files=4
+# Case name: used for both the Slurm job name and output subdirectory.
+case_name=LES12p5_newdomain_iconly
+# Slurm wall-clock limit per job (HH:MM:SS).
+walltime_per_job=01:00:00
+# Simulated seconds per job; sets CM1's run_time and rstfrq.
+simulation_seconds_per_job=7200.0
+# Total jobs, including the initial run.
+num_jobs=4

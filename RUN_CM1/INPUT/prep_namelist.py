@@ -5,22 +5,24 @@ from argparse import ArgumentParser
 infile = 'namelist.input'
 
 parser = ArgumentParser()
-parser.add_argument("run_time", help="time interval for restart jobs")
-parser.add_argument("num_files", help="number of restart jobs")
+parser.add_argument("simulation_seconds_per_job", type=float,
+                    help="simulated seconds per job (sets CM1 run_time and rstfrq)")
+parser.add_argument("num_jobs", type=int,
+                    help="total number of jobs, including the initial run")
 
 args = parser.parse_args()
 
-run_time = float(args.run_time)
-num_files = int(args.num_files)
+simulation_seconds_per_job = args.simulation_seconds_per_job
+num_jobs = args.num_jobs
 
 def update_switch(namelist_content, new_value):
     # Find and replace irst, rstnum, run_time, and rstfrq
     lines = namelist_content.split('\n')
     for i, line in enumerate(lines):
         if line.strip().startswith("run_time ="):
-            lines[i] = f" run_time = {run_time},"
+            lines[i] = f" run_time = {simulation_seconds_per_job},"
         if line.strip().startswith("rstfrq ="):
-            lines[i] = f" rstfrq = {run_time},"
+            lines[i] = f" rstfrq = {simulation_seconds_per_job},"
         if line.strip().startswith("irst      ="):
             if new_value ==0: lines[i] = " irst      =  0,"
             else: lines[i] = " irst      =  1,"
@@ -35,7 +37,7 @@ def main():
     with open(original_file, 'r') as f:
         original_content = f.read()
 
-    for i in range(num_files):
+    for i in range(num_jobs):
         updated_content = update_switch(original_content, i)
         new_filename = f"namelist.input{i:02}"
         
