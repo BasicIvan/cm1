@@ -11,5 +11,5 @@ cpus_per_task=1
 # job paramaters
 jobname=LES12p5_newdomain_iconly
 time=01:00:00
-run_time=61200.0
-num_files=1
+run_time=7200.0
+num_files=4
